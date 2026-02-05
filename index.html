@@ -1,0 +1,2103 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>小红书数据分析看板</title>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+            background: #0d0d0d;
+            color: #ffffff;
+            min-height: 100vh;
+            padding: 24px;
+        }
+
+        .header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 24px;
+            padding-bottom: 16px;
+            border-bottom: 1px solid #2a2a2a;
+            flex-wrap: wrap;
+            gap: 16px;
+        }
+
+        .logo {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+
+        .logo-icon {
+            width: 36px;
+            height: 36px;
+            background: linear-gradient(135deg, #ff6b6b, #ff8e8e);
+            border-radius: 8px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 18px;
+        }
+
+        .logo-text h1 { font-size: 20px; font-weight: 600; }
+        .logo-text p { font-size: 12px; color: #888; }
+
+        .date-filter {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            background: #1a1a1a;
+            padding: 8px 16px;
+            border-radius: 8px;
+            border: 1px solid #2a2a2a;
+            flex-wrap: wrap;
+        }
+
+        .date-filter label { font-size: 13px; color: #888; }
+
+        .date-filter select {
+            background: #0d0d0d;
+            border: 1px solid #3a3a3a;
+            color: #fff;
+            padding: 6px 10px;
+            border-radius: 4px;
+            font-size: 13px;
+            cursor: pointer;
+        }
+
+        .date-filter select:focus { outline: none; border-color: #ff6b6b; }
+
+        .date-filter button {
+            background: linear-gradient(135deg, #ff6b6b, #ff8e8e);
+            border: none;
+            color: #fff;
+            padding: 6px 16px;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 13px;
+            font-weight: 500;
+        }
+
+        .date-filter button:hover { opacity: 0.9; }
+        .date-filter button.secondary { background: #2a2a2a; }
+
+        .metrics-grid {
+            display: grid;
+            grid-template-columns: repeat(5, 1fr);
+            gap: 16px;
+            margin-bottom: 24px;
+        }
+
+        .metric-card {
+            background: #1a1a1a;
+            border-radius: 12px;
+            padding: 20px;
+            border: 1px solid #2a2a2a;
+        }
+
+        .metric-label {
+            font-size: 11px;
+            color: #888;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            margin-bottom: 8px;
+        }
+
+        .metric-value {
+            font-size: 32px;
+            font-weight: 700;
+            margin-bottom: 4px;
+        }
+
+        .metric-value.pink { color: #ff6b6b; }
+        .metric-value.green { color: #4ade80; }
+        .metric-value.white { color: #ffffff; }
+
+        .metric-subtitle { font-size: 11px; color: #4ade80; }
+
+        .charts-grid {
+            display: grid;
+            grid-template-columns: 1fr;
+            gap: 24px;
+            margin-bottom: 24px;
+        }
+
+        .chart-row {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 24px;
+        }
+
+        .chart-card {
+            background: #1a1a1a;
+            border-radius: 12px;
+            padding: 20px;
+            border: 1px solid #2a2a2a;
+        }
+
+        .chart-card.full-width { grid-column: 1 / -1; }
+
+        .chart-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-start;
+            margin-bottom: 16px;
+        }
+
+        .chart-title { font-size: 16px; font-weight: 600; }
+        .chart-subtitle { font-size: 12px; color: #888; margin-top: 4px; }
+
+        .chart-note {
+            font-size: 11px;
+            color: #666;
+            background: #2a2a2a;
+            padding: 4px 8px;
+            border-radius: 4px;
+        }
+
+        .chart-container { position: relative; height: 300px; }
+        .chart-container.tall { height: 400px; }
+
+        .keywords-section { display: grid; grid-template-columns: 1fr 1fr; gap: 24px; }
+
+        .keyword-cloud {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 8px;
+            padding: 16px 0;
+        }
+
+        .keyword-tag {
+            padding: 6px 12px;
+            border-radius: 16px;
+            font-size: 13px;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+        }
+
+        .keyword-tag.pink {
+            background: rgba(255, 107, 107, 0.2);
+            color: #ff8e8e;
+            border: 1px solid rgba(255, 107, 107, 0.3);
+        }
+
+        .keyword-tag.green {
+            background: rgba(74, 222, 128, 0.2);
+            color: #4ade80;
+            border: 1px solid rgba(74, 222, 128, 0.3);
+        }
+
+        .keyword-count {
+            background: rgba(255,255,255,0.1);
+            padding: 2px 6px;
+            border-radius: 10px;
+            font-size: 11px;
+        }
+
+        .ranking-list { max-height: 350px; overflow-y: auto; }
+
+        .ranking-item {
+            display: flex;
+            align-items: center;
+            padding: 10px 0;
+            border-bottom: 1px solid #2a2a2a;
+        }
+
+        .ranking-item:last-child { border-bottom: none; }
+
+        .ranking-number {
+            width: 24px;
+            height: 24px;
+            background: #2a2a2a;
+            border-radius: 4px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 12px;
+            font-weight: 600;
+            margin-right: 12px;
+            flex-shrink: 0;
+        }
+
+        .ranking-number.top3 { background: linear-gradient(135deg, #ff6b6b, #ff8e8e); }
+
+        .ranking-content { flex: 1; min-width: 0; }
+
+        .ranking-title {
+            font-size: 13px;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            margin-bottom: 4px;
+        }
+
+        .ranking-stats { font-size: 11px; color: #888; }
+
+        .ranking-value {
+            font-size: 14px;
+            font-weight: 600;
+            color: #4ade80;
+            margin-left: 12px;
+            flex-shrink: 0;
+        }
+
+        .tab-buttons { display: flex; gap: 8px; margin-bottom: 16px; }
+
+        .tab-btn {
+            background: #2a2a2a;
+            border: none;
+            color: #888;
+            padding: 6px 12px;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 12px;
+        }
+
+        .tab-btn.active {
+            background: linear-gradient(135deg, #ff6b6b, #ff8e8e);
+            color: #fff;
+        }
+
+        @media (max-width: 1200px) {
+            .metrics-grid { grid-template-columns: repeat(3, 1fr); }
+            .chart-row, .keywords-section { grid-template-columns: 1fr; }
+        }
+
+        @media (max-width: 768px) {
+            .metrics-grid { grid-template-columns: repeat(2, 1fr); }
+            .header { flex-direction: column; align-items: flex-start; }
+            body { padding: 16px; }
+        }
+    </style>
+</head>
+<body>
+    <div class="header">
+        <div class="logo">
+            <div class="logo-icon">📊</div>
+            <div class="logo-text">
+                <h1>Strategy Dashboard</h1>
+                <p>小红书数据分析 · Growth Analysis</p>
+            </div>
+        </div>
+        <div class="date-filter">
+            <label>起始月份</label>
+            <select id="startMonth"></select>
+            <label>结束月份</label>
+            <select id="endMonth"></select>
+            <button onclick="applyFilter()">筛选</button>
+            <button class="secondary" onclick="resetFilter()">重置</button>
+        </div>
+    </div>
+
+    <div class="metrics-grid">
+        <div class="metric-card">
+            <div class="metric-label">Total Impressions</div>
+            <div class="metric-value pink" id="totalImpressions">-</div>
+            <div class="metric-subtitle">总曝光量</div>
+        </div>
+        <div class="metric-card">
+            <div class="metric-label">Avg. CTR</div>
+            <div class="metric-value white" id="avgCtr">-</div>
+            <div class="metric-subtitle">平均点击率</div>
+        </div>
+        <div class="metric-card">
+            <div class="metric-label">Total Interactions</div>
+            <div class="metric-value white" id="totalInteractions">-</div>
+            <div class="metric-subtitle">赞+藏+评+分享</div>
+        </div>
+        <div class="metric-card">
+            <div class="metric-label">Utility Ratio</div>
+            <div class="metric-value green" id="utilityRatio">-</div>
+            <div class="metric-subtitle">收藏 / 点赞</div>
+        </div>
+        <div class="metric-card">
+            <div class="metric-label">Follower Gain</div>
+            <div class="metric-value green" id="totalFollowers">-</div>
+            <div class="metric-subtitle">总涨粉</div>
+        </div>
+    </div>
+
+    <div class="charts-grid">
+        <div class="chart-card full-width">
+            <div class="chart-header">
+                <div>
+                    <div class="chart-title">The North Star</div>
+                    <div class="chart-subtitle">Reach (Impressions) vs. Growth (Followers) - 按笔记分析</div>
+                </div>
+                <div class="chart-note" id="noteCount">共 0 篇笔记</div>
+            </div>
+            <div class="chart-container tall">
+                <canvas id="northStarChart"></canvas>
+            </div>
+        </div>
+
+        <div class="chart-row">
+            <div class="chart-card">
+                <div class="chart-title">涨粉趋势</div>
+                <div class="chart-subtitle">Follower Growth Over Time - 按时间分析</div>
+                <div class="chart-container">
+                    <canvas id="followerTrendChart"></canvas>
+                </div>
+            </div>
+
+            <div class="chart-card">
+                <div class="chart-title">Follower Conversion</div>
+                <div class="chart-subtitle">每千次曝光涨粉数 - Top 10</div>
+                <div class="chart-container">
+                    <canvas id="conversionChart"></canvas>
+                </div>
+            </div>
+        </div>
+
+        <div class="chart-row">
+            <div class="chart-card">
+                <div class="chart-title">笔记排行榜</div>
+                <div class="chart-subtitle">Top Performing Notes</div>
+                <div class="tab-buttons">
+                    <button class="tab-btn active" onclick="switchRanking('impressions', this)">曝光</button>
+                    <button class="tab-btn" onclick="switchRanking('interactions', this)">互动</button>
+                    <button class="tab-btn" onclick="switchRanking('followers', this)">涨粉</button>
+                </div>
+                <div class="ranking-list" id="rankingList"></div>
+            </div>
+
+            <div class="chart-card">
+                <div class="chart-title">Keyword Analysis</div>
+                <div class="chart-subtitle">标题关键词分析</div>
+                <div style="margin-bottom: 16px;">
+                    <div style="font-size: 12px; color: #ff8e8e; margin-bottom: 8px;">🔥 高赞笔记关键词</div>
+                    <div class="keyword-cloud" id="highLikesKeywords"></div>
+                </div>
+                <div>
+                    <div style="font-size: 12px; color: #4ade80; margin-bottom: 8px;">📈 高转化笔记关键词</div>
+                    <div class="keyword-cloud" id="highFollowersKeywords"></div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        const rawData = {
+  "notes": [
+    {
+      "title": "AI时代，高潜力年轻人的重要品质是什么？",
+      "date": "2025-08-10",
+      "month": "2025-08",
+      "type": "图文",
+      "impressions": 10999,
+      "views": 1705,
+      "ctr": 0.154,
+      "likes": 92,
+      "comments": 14,
+      "collects": 63,
+      "followers": 8,
+      "shares": 17,
+      "avgViewTime": 11
+    },
+    {
+      "title": "分享最近学AI收获的3点高能认知‼️",
+      "date": "2025-08-13",
+      "month": "2025-08",
+      "type": "图文",
+      "impressions": 4042,
+      "views": 437,
+      "ctr": 0.108,
+      "likes": 55,
+      "comments": 8,
+      "collects": 45,
+      "followers": 2,
+      "shares": 8,
+      "avgViewTime": 15
+    },
+    {
+      "title": "油管大神教的：如何像CEO一样表达(上)🔥",
+      "date": "2025-08-15",
+      "month": "2025-08",
+      "type": "图文",
+      "impressions": 37547,
+      "views": 4882,
+      "ctr": 0.13,
+      "likes": 677,
+      "comments": 2,
+      "collects": 743,
+      "followers": 35,
+      "shares": 79,
+      "avgViewTime": 17
+    },
+    {
+      "title": "油管大神教的：如何像CEO一样表达（下）🔥",
+      "date": "2025-08-18",
+      "month": "2025-08",
+      "type": "图文",
+      "impressions": 8206,
+      "views": 857,
+      "ctr": 0.107,
+      "likes": 138,
+      "comments": 2,
+      "collects": 141,
+      "followers": 4,
+      "shares": 15,
+      "avgViewTime": 15
+    },
+    {
+      "title": "听懂纳瓦尔这段话，你的成长从此开挂🔥",
+      "date": "2025-08-21",
+      "month": "2025-08",
+      "type": "图文",
+      "impressions": 2185,
+      "views": 147,
+      "ctr": 0.066,
+      "likes": 17,
+      "comments": 4,
+      "collects": 10,
+      "followers": 1,
+      "shares": 4,
+      "avgViewTime": 9
+    },
+    {
+      "title": "突然就明白了“成熟的爱”是这样的🩵",
+      "date": "2025-08-24",
+      "month": "2025-08",
+      "type": "图文",
+      "impressions": 2445,
+      "views": 195,
+      "ctr": 0.078,
+      "likes": 14,
+      "comments": 0,
+      "collects": 4,
+      "followers": 0,
+      "shares": 2,
+      "avgViewTime": 7
+    },
+    {
+      "title": "如何提高small talk能力(打车版)",
+      "date": "2025-08-25",
+      "month": "2025-08",
+      "type": "图文",
+      "impressions": 21156,
+      "views": 3262,
+      "ctr": 0.156,
+      "likes": 272,
+      "comments": 2,
+      "collects": 153,
+      "followers": 19,
+      "shares": 14,
+      "avgViewTime": 9
+    },
+    {
+      "title": "西雅图🇺🇸Amazon Spheres 来了就是🍌厂人",
+      "date": "2025-08-31",
+      "month": "2025-08",
+      "type": "图文",
+      "impressions": 7981,
+      "views": 1235,
+      "ctr": 0.155,
+      "likes": 19,
+      "comments": 4,
+      "collects": 4,
+      "followers": 2,
+      "shares": 7,
+      "avgViewTime": 26
+    },
+    {
+      "title": "🇺🇸西雅图情侣拍照，都给我来这里好吗‼️",
+      "date": "2025-09-01",
+      "month": "2025-09",
+      "type": "图文",
+      "impressions": 5394,
+      "views": 615,
+      "ctr": 0.114,
+      "likes": 16,
+      "comments": 2,
+      "collects": 3,
+      "followers": 0,
+      "shares": 7,
+      "avgViewTime": 7
+    },
+    {
+      "title": "西雅图遇见雷尼尔🏔️(熊出没版)🐻",
+      "date": "2025-09-02",
+      "month": "2025-09",
+      "type": "图文",
+      "impressions": 27524,
+      "views": 4621,
+      "ctr": 0.169,
+      "likes": 128,
+      "comments": 20,
+      "collects": 27,
+      "followers": 4,
+      "shares": 74,
+      "avgViewTime": 7
+    },
+    {
+      "title": "为什么我的“AI精神导师”双双提到Builder🤔",
+      "date": "2025-09-03",
+      "month": "2025-09",
+      "type": "图文",
+      "impressions": 24900,
+      "views": 5623,
+      "ctr": 0.225,
+      "likes": 78,
+      "comments": 17,
+      "collects": 48,
+      "followers": 13,
+      "shares": 11,
+      "avgViewTime": 26
+    },
+    {
+      "title": "西雅图，真的无聊吗？",
+      "date": "2025-09-05",
+      "month": "2025-09",
+      "type": "图文",
+      "impressions": 11517,
+      "views": 1857,
+      "ctr": 0.157,
+      "likes": 28,
+      "comments": 11,
+      "collects": 5,
+      "followers": 1,
+      "shares": 0,
+      "avgViewTime": 9
+    },
+    {
+      "title": "西雅图瞻仰李小龙，Be Water My Friend🌊",
+      "date": "2025-09-08",
+      "month": "2025-09",
+      "type": "图文",
+      "impressions": 3939,
+      "views": 375,
+      "ctr": 0.097,
+      "likes": 30,
+      "comments": 1,
+      "collects": 4,
+      "followers": 0,
+      "shares": 1,
+      "avgViewTime": 6
+    },
+    {
+      "title": "在西雅图住进了梦中情屋🏠Airbnb民宿",
+      "date": "2025-09-10",
+      "month": "2025-09",
+      "type": "图文",
+      "impressions": 4032,
+      "views": 437,
+      "ctr": 0.108,
+      "likes": 7,
+      "comments": 4,
+      "collects": 1,
+      "followers": 0,
+      "shares": 0,
+      "avgViewTime": 34
+    },
+    {
+      "title": "Hello Seattle📸 西雅图的夏天太有感觉了",
+      "date": "2025-09-16",
+      "month": "2025-09",
+      "type": "图文",
+      "impressions": 2251,
+      "views": 165,
+      "ctr": 0.071,
+      "likes": 5,
+      "comments": 0,
+      "collects": 0,
+      "followers": 1,
+      "shares": 0,
+      "avgViewTime": 10
+    },
+    {
+      "title": "H1B10万美金入境反转，我们真的安全了吗？",
+      "date": "2025-09-21",
+      "month": "2025-09",
+      "type": "图文",
+      "impressions": 5410,
+      "views": 899,
+      "ctr": 0.165,
+      "likes": 11,
+      "comments": 5,
+      "collects": 2,
+      "followers": 0,
+      "shares": 4,
+      "avgViewTime": 13
+    },
+    {
+      "title": "Databricks Data+AI 洛杉矶站🙋🙋‍♀️",
+      "date": "2025-09-22",
+      "month": "2025-09",
+      "type": "图文",
+      "impressions": 2533,
+      "views": 304,
+      "ctr": 0.121,
+      "likes": 6,
+      "comments": 0,
+      "collects": 5,
+      "followers": 0,
+      "shares": 5,
+      "avgViewTime": 9
+    },
+    {
+      "title": "南加州🏄人们把一切交给海浪🌊",
+      "date": "2025-09-23",
+      "month": "2025-09",
+      "type": "图文",
+      "impressions": 6035,
+      "views": 511,
+      "ctr": 0.085,
+      "likes": 5,
+      "comments": 1,
+      "collects": 0,
+      "followers": 0,
+      "shares": 0,
+      "avgViewTime": 12
+    },
+    {
+      "title": "我发现焦虑时听许知远的播客真的好解压😇",
+      "date": "2025-09-29",
+      "month": "2025-09",
+      "type": "图文",
+      "impressions": 6117,
+      "views": 871,
+      "ctr": 0.143,
+      "likes": 60,
+      "comments": 1,
+      "collects": 33,
+      "followers": 2,
+      "shares": 3,
+      "avgViewTime": 7
+    },
+    {
+      "title": "入职三个月的思考：降低信噪比真的好重要",
+      "date": "2025-10-01",
+      "month": "2025-10",
+      "type": "图文",
+      "impressions": 14107,
+      "views": 2428,
+      "ctr": 0.173,
+      "likes": 244,
+      "comments": 1,
+      "collects": 267,
+      "followers": 16,
+      "shares": 24,
+      "avgViewTime": 6
+    },
+    {
+      "title": "谁懂啊！职场六边形战士原来是这样练成的",
+      "date": "2025-10-05",
+      "month": "2025-10",
+      "type": "图文",
+      "impressions": 9880,
+      "views": 1384,
+      "ctr": 0.14,
+      "likes": 89,
+      "comments": 4,
+      "collects": 94,
+      "followers": 10,
+      "shares": 25,
+      "avgViewTime": 11
+    },
+    {
+      "title": "想拥有在世界任何地方安放自己的能力🌍",
+      "date": "2025-10-06",
+      "month": "2025-10",
+      "type": "图文",
+      "impressions": 2881,
+      "views": 260,
+      "ctr": 0.089,
+      "likes": 26,
+      "comments": 1,
+      "collects": 2,
+      "followers": 1,
+      "shares": 3,
+      "avgViewTime": 39
+    },
+    {
+      "title": "围观硅谷华人产品经理离职后的3点感悟",
+      "date": "2025-10-07",
+      "month": "2025-10",
+      "type": "图文",
+      "impressions": 11983,
+      "views": 2581,
+      "ctr": 0.215,
+      "likes": 48,
+      "comments": 3,
+      "collects": 17,
+      "followers": 13,
+      "shares": 19,
+      "avgViewTime": 51
+    },
+    {
+      "title": "如何提高small talk能力（🇺🇸职场团建版）",
+      "date": "2025-10-09",
+      "month": "2025-10",
+      "type": "图文",
+      "impressions": 3902,
+      "views": 303,
+      "ctr": 0.078,
+      "likes": 11,
+      "comments": 2,
+      "collects": 13,
+      "followers": 2,
+      "shares": 1,
+      "avgViewTime": 29
+    },
+    {
+      "title": "加州落日California Vibe在这一刻具象化🥹",
+      "date": "2025-10-11",
+      "month": "2025-10",
+      "type": "图文",
+      "impressions": 5330,
+      "views": 438,
+      "ctr": 0.084,
+      "likes": 13,
+      "comments": 2,
+      "collects": 4,
+      "followers": 0,
+      "shares": 7,
+      "avgViewTime": 18
+    },
+    {
+      "title": "30+感悟：健身让我明白了一个真相",
+      "date": "2025-10-12",
+      "month": "2025-10",
+      "type": "图文",
+      "impressions": 22273,
+      "views": 5182,
+      "ctr": 0.245,
+      "likes": 205,
+      "comments": 20,
+      "collects": 98,
+      "followers": 13,
+      "shares": 12,
+      "avgViewTime": 11
+    },
+    {
+      "title": "🇺🇸北美职场让你懂人情世故的加分tips",
+      "date": "2025-10-13",
+      "month": "2025-10",
+      "type": "图文",
+      "impressions": 14942,
+      "views": 2212,
+      "ctr": 0.151,
+      "likes": 272,
+      "comments": 1,
+      "collects": 266,
+      "followers": 14,
+      "shares": 16,
+      "avgViewTime": 16
+    },
+    {
+      "title": "大数据请推给参加LA Tech Week的朋友🤩",
+      "date": "2025-10-14",
+      "month": "2025-10",
+      "type": "图文",
+      "impressions": 4495,
+      "views": 634,
+      "ctr": 0.142,
+      "likes": 41,
+      "comments": 5,
+      "collects": 20,
+      "followers": 9,
+      "shares": 6,
+      "avgViewTime": 3
+    },
+    {
+      "title": "30+感悟：如何把自己养出高能量🌟",
+      "date": "2025-10-15",
+      "month": "2025-10",
+      "type": "图文",
+      "impressions": 3511,
+      "views": 284,
+      "ctr": 0.083,
+      "likes": 22,
+      "comments": 6,
+      "collects": 19,
+      "followers": 0,
+      "shares": 4,
+      "avgViewTime": 15
+    },
+    {
+      "title": "长大后的万灵药：人生有的选or没得选？",
+      "date": "2025-10-19",
+      "month": "2025-10",
+      "type": "图文",
+      "impressions": 2371,
+      "views": 170,
+      "ctr": 0.07,
+      "likes": 10,
+      "comments": 3,
+      "collects": 3,
+      "followers": 0,
+      "shares": 1,
+      "avgViewTime": 9
+    },
+    {
+      "title": "Santa Monica 在这里可以忘记所有忧愁烦恼",
+      "date": "2025-10-19",
+      "month": "2025-10",
+      "type": "图文",
+      "impressions": 3607,
+      "views": 239,
+      "ctr": 0.066,
+      "likes": 8,
+      "comments": 0,
+      "collects": 1,
+      "followers": 0,
+      "shares": 0,
+      "avgViewTime": 26
+    },
+    {
+      "title": "围观科技大佬用AI提高工作效率的一些启发",
+      "date": "2025-10-20",
+      "month": "2025-10",
+      "type": "图文",
+      "impressions": 3056,
+      "views": 208,
+      "ctr": 0.066,
+      "likes": 17,
+      "comments": 0,
+      "collects": 20,
+      "followers": 1,
+      "shares": 6,
+      "avgViewTime": 29
+    },
+    {
+      "title": "我的天真有用啊🥹",
+      "date": "2025-10-21",
+      "month": "2025-10",
+      "type": "图文",
+      "impressions": 2348,
+      "views": 269,
+      "ctr": 0.112,
+      "likes": 5,
+      "comments": 30,
+      "collects": 0,
+      "followers": 0,
+      "shares": 1,
+      "avgViewTime": 9
+    },
+    {
+      "title": "洛杉矶韩签🇰🇷五年多次丝滑get✅",
+      "date": "2025-10-23",
+      "month": "2025-10",
+      "type": "图文",
+      "impressions": 526,
+      "views": 39,
+      "ctr": 0.076,
+      "likes": 0,
+      "comments": 0,
+      "collects": 2,
+      "followers": 0,
+      "shares": 0,
+      "avgViewTime": 20
+    },
+    {
+      "title": "亲身经历lay off从北美职场博主到离职博主",
+      "date": "2025-10-26",
+      "month": "2025-10",
+      "type": "图文",
+      "impressions": 28167,
+      "views": 5647,
+      "ctr": 0.2,
+      "likes": 76,
+      "comments": 59,
+      "collects": 9,
+      "followers": 6,
+      "shares": 10,
+      "avgViewTime": 19
+    },
+    {
+      "title": "北美找工记录|被layoff后48小时我在做什么",
+      "date": "2025-10-29",
+      "month": "2025-10",
+      "type": "图文",
+      "impressions": 21548,
+      "views": 4265,
+      "ctr": 0.198,
+      "likes": 89,
+      "comments": 25,
+      "collects": 33,
+      "followers": 4,
+      "shares": 7,
+      "avgViewTime": 14
+    },
+    {
+      "title": "北美找工周记｜Treat yourself a New Job🎃",
+      "date": "2025-11-01",
+      "month": "2025-11",
+      "type": "图文",
+      "impressions": 3497,
+      "views": 510,
+      "ctr": 0.146,
+      "likes": 25,
+      "comments": 3,
+      "collects": 9,
+      "followers": 1,
+      "shares": 0,
+      "avgViewTime": 18
+    },
+    {
+      "title": "金句频出的一期直播对谈(AI学习必看)",
+      "date": "2025-11-03",
+      "month": "2025-11",
+      "type": "图文",
+      "impressions": 3903,
+      "views": 442,
+      "ctr": 0.11,
+      "likes": 31,
+      "comments": 3,
+      "collects": 11,
+      "followers": 0,
+      "shares": 4,
+      "avgViewTime": 67
+    },
+    {
+      "title": "被裁后，我靠这3个习惯，训练反脆弱🌊",
+      "date": "2025-11-05",
+      "month": "2025-11",
+      "type": "图文",
+      "impressions": 2138,
+      "views": 221,
+      "ctr": 0.102,
+      "likes": 15,
+      "comments": 7,
+      "collects": 4,
+      "followers": 2,
+      "shares": 1,
+      "avgViewTime": 18
+    },
+    {
+      "title": "果然薅羊毛能提高学习动力🤭",
+      "date": "2025-11-06",
+      "month": "2025-11",
+      "type": "图文",
+      "impressions": 3525,
+      "views": 541,
+      "ctr": 0.154,
+      "likes": 42,
+      "comments": 1,
+      "collects": 30,
+      "followers": 0,
+      "shares": 6,
+      "avgViewTime": 6
+    },
+    {
+      "title": "北美找工周记｜到那个时候，我又可以出发了🌊",
+      "date": "2025-11-08",
+      "month": "2025-11",
+      "type": "图文",
+      "impressions": 1755,
+      "views": 227,
+      "ctr": 0.129,
+      "likes": 8,
+      "comments": 8,
+      "collects": 0,
+      "followers": 1,
+      "shares": 1,
+      "avgViewTime": 13
+    },
+    {
+      "title": "详细分享如何用AI学习油管高质量英文播客",
+      "date": "2025-11-09",
+      "month": "2025-11",
+      "type": "图文",
+      "impressions": 5002,
+      "views": 396,
+      "ctr": 0.078,
+      "likes": 36,
+      "comments": 8,
+      "collects": 29,
+      "followers": 2,
+      "shares": 6,
+      "avgViewTime": 16
+    },
+    {
+      "title": "2万人围观的Google AI agent课程直播😮",
+      "date": "2025-11-11",
+      "month": "2025-11",
+      "type": "图文",
+      "impressions": 5377,
+      "views": 678,
+      "ctr": 0.126,
+      "likes": 29,
+      "comments": 1,
+      "collects": 43,
+      "followers": 5,
+      "shares": 12,
+      "avgViewTime": 16
+    },
+    {
+      "title": "谷歌AI Agent Day 2课程学习打卡📝",
+      "date": "2025-11-12",
+      "month": "2025-11",
+      "type": "图文",
+      "impressions": 2416,
+      "views": 208,
+      "ctr": 0.083,
+      "likes": 19,
+      "comments": 7,
+      "collects": 4,
+      "followers": 1,
+      "shares": 2,
+      "avgViewTime": 5
+    },
+    {
+      "title": "谷歌AI Agent Day 3课程学习打卡📒",
+      "date": "2025-11-13",
+      "month": "2025-11",
+      "type": "图文",
+      "impressions": 3341,
+      "views": 324,
+      "ctr": 0.096,
+      "likes": 12,
+      "comments": 3,
+      "collects": 8,
+      "followers": 5,
+      "shares": 0,
+      "avgViewTime": 3
+    },
+    {
+      "title": "谷歌AI Agent Day 4课程学习打卡📝",
+      "date": "2025-11-14",
+      "month": "2025-11",
+      "type": "图文",
+      "impressions": 2259,
+      "views": 157,
+      "ctr": 0.068,
+      "likes": 8,
+      "comments": 0,
+      "collects": 9,
+      "followers": 0,
+      "shares": 1,
+      "avgViewTime": 3
+    },
+    {
+      "title": "谷歌AI Agent Day 5课程学习打卡(完结篇)",
+      "date": "2025-11-15",
+      "month": "2025-11",
+      "type": "图文",
+      "impressions": 4452,
+      "views": 570,
+      "ctr": 0.125,
+      "likes": 26,
+      "comments": 6,
+      "collects": 22,
+      "followers": 2,
+      "shares": 5,
+      "avgViewTime": 16
+    },
+    {
+      "title": "站着看完2小时硅谷顶级产品经理访谈，一个字",
+      "date": "2025-11-16",
+      "month": "2025-11",
+      "type": "图文",
+      "impressions": 3411,
+      "views": 280,
+      "ctr": 0.083,
+      "likes": 23,
+      "comments": 0,
+      "collects": 16,
+      "followers": 1,
+      "shares": 5,
+      "avgViewTime": 49
+    },
+    {
+      "title": "硅谷顶级产品经理的职场成长心法👀",
+      "date": "2025-11-18",
+      "month": "2025-11",
+      "type": "图文",
+      "impressions": 1944,
+      "views": 139,
+      "ctr": 0.07,
+      "likes": 6,
+      "comments": 2,
+      "collects": 5,
+      "followers": 1,
+      "shares": 3,
+      "avgViewTime": 8
+    },
+    {
+      "title": "跟AI聊了30分钟，拿下今年黑五最佳Deal🥳",
+      "date": "2025-11-29",
+      "month": "2025-11",
+      "type": "图文",
+      "impressions": 4464,
+      "views": 875,
+      "ctr": 0.194,
+      "likes": 11,
+      "comments": 5,
+      "collects": 4,
+      "followers": 2,
+      "shares": 4,
+      "avgViewTime": 13
+    },
+    {
+      "title": "如何让GPT老师主动推荐你的产品🔍",
+      "date": "2025-12-01",
+      "month": "2025-12",
+      "type": "图文",
+      "impressions": 535,
+      "views": 28,
+      "ctr": 0.054,
+      "likes": 2,
+      "comments": 0,
+      "collects": 4,
+      "followers": 0,
+      "shares": 0,
+      "avgViewTime": 4
+    },
+    {
+      "title": "我仿佛无意中闯入了一张明信片(加州版)",
+      "date": "2025-12-02",
+      "month": "2025-12",
+      "type": "图文",
+      "impressions": 14001,
+      "views": 1991,
+      "ctr": 0.143,
+      "likes": 103,
+      "comments": 13,
+      "collects": 25,
+      "followers": 2,
+      "shares": 20,
+      "avgViewTime": 7
+    },
+    {
+      "title": "J人分享：如何用AI工具做播客知识库📒",
+      "date": "2025-12-08",
+      "month": "2025-12",
+      "type": "视频",
+      "impressions": 4899,
+      "views": 1486,
+      "ctr": 0.071,
+      "likes": 61,
+      "comments": 3,
+      "collects": 75,
+      "followers": 19,
+      "shares": 10,
+      "avgViewTime": 21
+    },
+    {
+      "title": "强烈推荐大家Notebook LM用起来‼️",
+      "date": "2025-12-13",
+      "month": "2025-12",
+      "type": "视频",
+      "impressions": 2206,
+      "views": 360,
+      "ctr": 0.066,
+      "likes": 17,
+      "comments": 6,
+      "collects": 10,
+      "followers": 1,
+      "shares": 2,
+      "avgViewTime": 12
+    },
+    {
+      "title": "30岁重新理解学习这件事",
+      "date": "2025-12-14",
+      "month": "2025-12",
+      "type": "图文",
+      "impressions": 2695,
+      "views": 331,
+      "ctr": 0.124,
+      "likes": 27,
+      "comments": 3,
+      "collects": 15,
+      "followers": 0,
+      "shares": 0,
+      "avgViewTime": 11
+    },
+    {
+      "title": "听硅谷AI Startup创始人聊产品的Aha Moment",
+      "date": "2025-12-15",
+      "month": "2025-12",
+      "type": "图文",
+      "impressions": 4632,
+      "views": 600,
+      "ctr": 0.129,
+      "likes": 31,
+      "comments": 1,
+      "collects": 18,
+      "followers": 4,
+      "shares": 2,
+      "avgViewTime": 4
+    },
+    {
+      "title": "🇺🇸找工很糟心，不如看看这本让你哈哈大笑",
+      "date": "2025-12-25",
+      "month": "2025-12",
+      "type": "图文",
+      "impressions": 2059,
+      "views": 183,
+      "ctr": 0.089,
+      "likes": 16,
+      "comments": 3,
+      "collects": 4,
+      "followers": 0,
+      "shares": 1,
+      "avgViewTime": 46
+    },
+    {
+      "title": "Notion创始人的年度思考，1个细节我停了很久",
+      "date": "2025-12-26",
+      "month": "2025-12",
+      "type": "图文",
+      "impressions": 10172,
+      "views": 1660,
+      "ctr": 0.164,
+      "likes": 106,
+      "comments": 1,
+      "collects": 98,
+      "followers": 3,
+      "shares": 9,
+      "avgViewTime": 10
+    },
+    {
+      "title": "J人年终总结🎧篇：2025我的Top1播客出现了",
+      "date": "2025-12-28",
+      "month": "2025-12",
+      "type": "图文",
+      "impressions": 2812,
+      "views": 225,
+      "ctr": 0.08,
+      "likes": 16,
+      "comments": 7,
+      "collects": 7,
+      "followers": 0,
+      "shares": 2,
+      "avgViewTime": 21
+    },
+    {
+      "title": "进入2026年前，请听这一期高质量AI播客🚀",
+      "date": "2025-12-29",
+      "month": "2025-12",
+      "type": "图文",
+      "impressions": 2723,
+      "views": 232,
+      "ctr": 0.085,
+      "likes": 22,
+      "comments": 3,
+      "collects": 20,
+      "followers": 0,
+      "shares": 4,
+      "avgViewTime": 5
+    },
+    {
+      "title": "没想到2025年最触及我的书居然是这本🥹",
+      "date": "2025-12-30",
+      "month": "2025-12",
+      "type": "图文",
+      "impressions": 14964,
+      "views": 1854,
+      "ctr": 0.125,
+      "likes": 145,
+      "comments": 8,
+      "collects": 123,
+      "followers": 6,
+      "shares": 12,
+      "avgViewTime": 19
+    },
+    {
+      "title": "活人感「Be Real」将成为2026年AI领域的热词",
+      "date": "2026-01-07",
+      "month": "2026-01",
+      "type": "图文",
+      "impressions": 2252,
+      "views": 169,
+      "ctr": 0.073,
+      "likes": 20,
+      "comments": 5,
+      "collects": 7,
+      "followers": 0,
+      "shares": 3,
+      "avgViewTime": 11
+    },
+    {
+      "title": "我发现很多人学AI都有一个误区",
+      "date": "2026-01-09",
+      "month": "2026-01",
+      "type": "图文",
+      "impressions": 1793,
+      "views": 207,
+      "ctr": 0.115,
+      "likes": 21,
+      "comments": 0,
+      "collects": 14,
+      "followers": 1,
+      "shares": 7,
+      "avgViewTime": 15
+    },
+    {
+      "title": "我真的按头安利‼️原来阅读记录app这么好玩",
+      "date": "2026-01-10",
+      "month": "2026-01",
+      "type": "图文",
+      "impressions": 21067,
+      "views": 3536,
+      "ctr": 0.171,
+      "likes": 200,
+      "comments": 16,
+      "collects": 109,
+      "followers": 3,
+      "shares": 13,
+      "avgViewTime": 21
+    },
+    {
+      "title": "在加州想念纽约",
+      "date": "2026-01-11",
+      "month": "2026-01",
+      "type": "图文",
+      "impressions": 2255,
+      "views": 267,
+      "ctr": 0.12,
+      "likes": 24,
+      "comments": 11,
+      "collects": 6,
+      "followers": 1,
+      "shares": 3,
+      "avgViewTime": 13
+    },
+    {
+      "title": "真心建议所有女生都读一下这本书‼️通透💡",
+      "date": "2026-01-12",
+      "month": "2026-01",
+      "type": "图文",
+      "impressions": 2890,
+      "views": 285,
+      "ctr": 0.096,
+      "likes": 21,
+      "comments": 3,
+      "collects": 22,
+      "followers": 1,
+      "shares": 1,
+      "avgViewTime": 16
+    },
+    {
+      "title": "🇺🇸给正在找工的朋友们一点方向与信心🧭",
+      "date": "2026-01-14",
+      "month": "2026-01",
+      "type": "图文",
+      "impressions": 2767,
+      "views": 423,
+      "ctr": 0.151,
+      "likes": 23,
+      "comments": 1,
+      "collects": 9,
+      "followers": 0,
+      "shares": 1,
+      "avgViewTime": 25
+    },
+    {
+      "title": "不要去主动摄入与你无关的信息",
+      "date": "2026-01-16",
+      "month": "2026-01",
+      "type": "图文",
+      "impressions": 5436,
+      "views": 946,
+      "ctr": 0.177,
+      "likes": 112,
+      "comments": 5,
+      "collects": 65,
+      "followers": 4,
+      "shares": 5,
+      "avgViewTime": 21
+    },
+    {
+      "title": "左滑带你看约书亚树的星空🌌",
+      "date": "2026-01-18",
+      "month": "2026-01",
+      "type": "图文",
+      "impressions": 3915,
+      "views": 555,
+      "ctr": 0.142,
+      "likes": 19,
+      "comments": 5,
+      "collects": 5,
+      "followers": 0,
+      "shares": 9,
+      "avgViewTime": 10
+    },
+    {
+      "title": "在加州Joshua Tree 把自己扔进🌵",
+      "date": "2026-01-19",
+      "month": "2026-01",
+      "type": "图文",
+      "impressions": 2999,
+      "views": 422,
+      "ctr": 0.139,
+      "likes": 13,
+      "comments": 3,
+      "collects": 4,
+      "followers": 1,
+      "shares": 1,
+      "avgViewTime": 8
+    },
+    {
+      "title": "如何在AI时代做出优秀的内容？",
+      "date": "2026-01-20",
+      "month": "2026-01",
+      "type": "图文",
+      "impressions": 1383,
+      "views": 97,
+      "ctr": 0.07,
+      "likes": 10,
+      "comments": 0,
+      "collects": 6,
+      "followers": 1,
+      "shares": 0,
+      "avgViewTime": 5
+    },
+    {
+      "title": "这一波操作 Claude上大分",
+      "date": "2026-01-25",
+      "month": "2026-01",
+      "type": "图文",
+      "impressions": 5150,
+      "views": 1014,
+      "ctr": 0.197,
+      "likes": 26,
+      "comments": 5,
+      "collects": 23,
+      "followers": 2,
+      "shares": 12,
+      "avgViewTime": 17
+    },
+    {
+      "title": "一件平常小事提醒我关于当下转念💐",
+      "date": "2026-01-28",
+      "month": "2026-01",
+      "type": "图文",
+      "impressions": 3191,
+      "views": 571,
+      "ctr": 0.182,
+      "likes": 42,
+      "comments": 13,
+      "collects": 9,
+      "followers": 0,
+      "shares": 3,
+      "avgViewTime": 17
+    },
+    {
+      "title": "原来Dream Job真的是自己创造出来的",
+      "date": "2026-01-30",
+      "month": "2026-01",
+      "type": "图文",
+      "impressions": 5342,
+      "views": 496,
+      "ctr": 0.092,
+      "likes": 59,
+      "comments": 3,
+      "collects": 73,
+      "followers": 0,
+      "shares": 7,
+      "avgViewTime": 31
+    },
+    {
+      "title": "听完这期播客，我决定停止那些无效的迂回",
+      "date": "2026-02-02",
+      "month": "2026-02",
+      "type": "图文",
+      "impressions": 357,
+      "views": 47,
+      "ctr": 0.134,
+      "likes": 5,
+      "comments": 0,
+      "collects": 4,
+      "followers": 0,
+      "shares": 1,
+      "avgViewTime": 16
+    },
+    {
+      "title": "学AI不要中计！不要中计！不要中计！",
+      "date": "2026-02-03",
+      "month": "2026-02",
+      "type": "图文",
+      "impressions": 2209,
+      "views": 308,
+      "ctr": 0.135,
+      "likes": 15,
+      "comments": 3,
+      "collects": 13,
+      "followers": 0,
+      "shares": 1,
+      "avgViewTime": 15
+    },
+    {
+      "title": "Claude Code写的学习笔记📒 强得令人发指😮",
+      "date": "2026-02-04",
+      "month": "2026-02",
+      "type": "图文",
+      "impressions": 4608,
+      "views": 2352,
+      "ctr": 0.217,
+      "likes": 33,
+      "comments": 3,
+      "collects": 20,
+      "followers": 0,
+      "shares": 3,
+      "avgViewTime": 25
+    }
+  ],
+  "months": [
+    "2025-08",
+    "2025-09",
+    "2025-10",
+    "2025-11",
+    "2025-12",
+    "2026-01",
+    "2026-02"
+  ],
+  "highLikesKeywords": [
+    [
+      "北美",
+      3
+    ],
+    [
+      "职场",
+      3
+    ],
+    [
+      "原来",
+      3
+    ],
+    [
+      "ai",
+      3
+    ],
+    [
+      "油管",
+      2
+    ],
+    [
+      "神教",
+      2
+    ],
+    [
+      "ceo",
+      2
+    ],
+    [
+      "一样",
+      2
+    ],
+    [
+      "表达",
+      2
+    ],
+    [
+      "思考",
+      2
+    ],
+    [
+      "重要",
+      2
+    ],
+    [
+      "记录",
+      2
+    ],
+    [
+      "提高",
+      1
+    ],
+    [
+      "small",
+      1
+    ],
+    [
+      "talk",
+      1
+    ],
+    [
+      "能力",
+      1
+    ],
+    [
+      "打车",
+      1
+    ],
+    [
+      "人情世故",
+      1
+    ],
+    [
+      "加分",
+      1
+    ],
+    [
+      "tips",
+      1
+    ],
+    [
+      "入职",
+      1
+    ],
+    [
+      "三个",
+      1
+    ],
+    [
+      "降低",
+      1
+    ],
+    [
+      "信噪比",
+      1
+    ],
+    [
+      "感悟",
+      1
+    ],
+    [
+      "健身",
+      1
+    ],
+    [
+      "明白",
+      1
+    ],
+    [
+      "真相",
+      1
+    ],
+    [
+      "按头",
+      1
+    ],
+    [
+      "安利",
+      1
+    ]
+  ],
+  "highFollowersKeywords": [
+    [
+      "ai",
+      6
+    ],
+    [
+      "北美",
+      3
+    ],
+    [
+      "职场",
+      3
+    ],
+    [
+      "油管",
+      2
+    ],
+    [
+      "神教",
+      2
+    ],
+    [
+      "ceo",
+      2
+    ],
+    [
+      "一样",
+      2
+    ],
+    [
+      "表达",
+      2
+    ],
+    [
+      "重要",
+      2
+    ],
+    [
+      "围观",
+      2
+    ],
+    [
+      "硅谷",
+      2
+    ],
+    [
+      "产品",
+      2
+    ],
+    [
+      "离职",
+      2
+    ],
+    [
+      "感悟",
+      2
+    ],
+    [
+      "agent",
+      2
+    ],
+    [
+      "课程",
+      2
+    ],
+    [
+      "提高",
+      1
+    ],
+    [
+      "small",
+      1
+    ],
+    [
+      "talk",
+      1
+    ],
+    [
+      "能力",
+      1
+    ],
+    [
+      "打车",
+      1
+    ],
+    [
+      "分享",
+      1
+    ],
+    [
+      "工具",
+      1
+    ],
+    [
+      "做播客",
+      1
+    ],
+    [
+      "知识库",
+      1
+    ],
+    [
+      "入职",
+      1
+    ],
+    [
+      "三个",
+      1
+    ],
+    [
+      "思考",
+      1
+    ],
+    [
+      "降低",
+      1
+    ],
+    [
+      "信噪比",
+      1
+    ]
+  ]
+};
+
+        let filteredData = [...rawData.notes];
+        let northStarChart, followerTrendChart, conversionChart;
+
+        // Initialize month dropdowns
+        function initMonthPickers() {
+            const startSelect = document.getElementById('startMonth');
+            const endSelect = document.getElementById('endMonth');
+
+            const months = rawData.months;
+            const options = months.map(m => `<option value="${m}">${m}</option>`).join('');
+
+            startSelect.innerHTML = options;
+            endSelect.innerHTML = options;
+
+            if (months.length > 0) {
+                startSelect.value = months[0];
+                endSelect.value = months[months.length - 1];
+            }
+        }
+
+        // Apply month filter
+        function applyFilter() {
+            const startMonth = document.getElementById('startMonth').value;
+            const endMonth = document.getElementById('endMonth').value;
+
+            filteredData = rawData.notes.filter(note => {
+                if (!note.month) return false;
+                return note.month >= startMonth && note.month <= endMonth;
+            });
+
+            updateDashboard();
+        }
+
+        // Reset filter
+        function resetFilter() {
+            filteredData = [...rawData.notes];
+            initMonthPickers();
+            updateDashboard();
+        }
+
+        // Format number
+        function formatNumber(num) {
+            if (num >= 10000) return (num / 10000).toFixed(1) + 'w';
+            return num.toLocaleString();
+        }
+
+        // Update dashboard
+        function updateDashboard() {
+            updateMetrics();
+            updateNorthStarChart();
+            updateFollowerTrendChart();
+            updateConversionChart();
+            updateRanking('impressions');
+            updateKeywords();
+        }
+
+        // Update metrics
+        function updateMetrics() {
+            const totalImpressions = filteredData.reduce((sum, n) => sum + n.impressions, 0);
+            const avgCtr = filteredData.length > 0
+                ? (filteredData.reduce((sum, n) => sum + n.ctr, 0) / filteredData.length * 100).toFixed(2)
+                : 0;
+            const totalInteractions = filteredData.reduce((sum, n) => sum + n.likes + n.collects + n.comments + n.shares, 0);
+            const totalLikes = filteredData.reduce((sum, n) => sum + n.likes, 0);
+            const totalCollects = filteredData.reduce((sum, n) => sum + n.collects, 0);
+            const utilityRatio = totalLikes > 0 ? (totalCollects / totalLikes).toFixed(2) : 0;
+            const totalFollowers = filteredData.reduce((sum, n) => sum + n.followers, 0);
+
+            document.getElementById('totalImpressions').textContent = formatNumber(totalImpressions);
+            document.getElementById('avgCtr').textContent = avgCtr + '%';
+            document.getElementById('totalInteractions').textContent = formatNumber(totalInteractions);
+            document.getElementById('utilityRatio').textContent = utilityRatio;
+            document.getElementById('totalFollowers').textContent = totalFollowers;
+        }
+
+        // North Star Chart
+        function updateNorthStarChart() {
+            const ctx = document.getElementById('northStarChart').getContext('2d');
+            if (northStarChart) northStarChart.destroy();
+
+            document.getElementById('noteCount').textContent = `共 ${filteredData.length} 篇笔记`;
+
+            const labels = filteredData.map(n => n.title.length > 12 ? n.title.substring(0, 12) + '...' : n.title);
+            const impressions = filteredData.map(n => n.impressions);
+            const followers = filteredData.map(n => n.followers);
+
+            northStarChart = new Chart(ctx, {
+                type: 'line',
+                data: {
+                    labels: labels,
+                    datasets: [
+                        {
+                            label: 'Impressions',
+                            data: impressions,
+                            borderColor: '#ff6b6b',
+                            backgroundColor: 'rgba(255, 107, 107, 0.1)',
+                            borderWidth: 2,
+                            fill: true,
+                            tension: 0.3,
+                            yAxisID: 'y'
+                        },
+                        {
+                            label: 'Follower Gain',
+                            data: followers,
+                            borderColor: '#4ade80',
+                            backgroundColor: '#4ade80',
+                            borderWidth: 2,
+                            pointRadius: 5,
+                            pointStyle: 'circle',
+                            showLine: true,
+                            borderDash: [5, 5],
+                            yAxisID: 'y1'
+                        }
+                    ]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    interaction: { mode: 'index', intersect: false },
+                    plugins: {
+                        legend: {
+                            position: 'top',
+                            align: 'end',
+                            labels: { color: '#888', usePointStyle: true }
+                        },
+                        tooltip: {
+                            callbacks: {
+                                title: function(context) {
+                                    return filteredData[context[0].dataIndex].title;
+                                }
+                            }
+                        }
+                    },
+                    scales: {
+                        x: {
+                            ticks: { color: '#888', maxRotation: 45, minRotation: 45, font: { size: 10 } },
+                            grid: { color: '#2a2a2a' }
+                        },
+                        y: {
+                            type: 'linear',
+                            position: 'left',
+                            ticks: { color: '#ff6b6b', callback: v => formatNumber(v) },
+                            grid: { color: '#2a2a2a' },
+                            title: { display: true, text: 'Impressions', color: '#ff6b6b' }
+                        },
+                        y1: {
+                            type: 'linear',
+                            position: 'right',
+                            ticks: { color: '#4ade80' },
+                            grid: { display: false },
+                            title: { display: true, text: 'Followers', color: '#4ade80' }
+                        }
+                    }
+                }
+            });
+        }
+
+        // Follower Trend Chart
+        function updateFollowerTrendChart() {
+            const ctx = document.getElementById('followerTrendChart').getContext('2d');
+            if (followerTrendChart) followerTrendChart.destroy();
+
+            const dateMap = {};
+            filteredData.forEach(n => {
+                if (n.date) {
+                    dateMap[n.date] = (dateMap[n.date] || 0) + n.followers;
+                }
+            });
+
+            const sortedDates = Object.keys(dateMap).sort();
+            const followers = sortedDates.map(d => dateMap[d]);
+
+            let cumulative = 0;
+            const cumulativeFollowers = followers.map(f => { cumulative += f; return cumulative; });
+
+            followerTrendChart = new Chart(ctx, {
+                type: 'line',
+                data: {
+                    labels: sortedDates,
+                    datasets: [
+                        {
+                            label: '累计涨粉',
+                            data: cumulativeFollowers,
+                            borderColor: '#4ade80',
+                            backgroundColor: 'rgba(74, 222, 128, 0.1)',
+                            borderWidth: 2,
+                            fill: true,
+                            tension: 0.3
+                        },
+                        {
+                            label: '当日涨粉',
+                            data: followers,
+                            borderColor: '#ff6b6b',
+                            backgroundColor: '#ff6b6b',
+                            borderWidth: 0,
+                            pointRadius: 4,
+                            type: 'bar',
+                            barThickness: 8
+                        }
+                    ]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        legend: { position: 'top', align: 'end', labels: { color: '#888', usePointStyle: true } }
+                    },
+                    scales: {
+                        x: { ticks: { color: '#888', maxRotation: 45, minRotation: 45, font: { size: 10 } }, grid: { color: '#2a2a2a' } },
+                        y: { ticks: { color: '#888' }, grid: { color: '#2a2a2a' } }
+                    }
+                }
+            });
+        }
+
+        // Conversion Chart
+        function updateConversionChart() {
+            const ctx = document.getElementById('conversionChart').getContext('2d');
+            if (conversionChart) conversionChart.destroy();
+
+            const withConversion = filteredData
+                .map(n => ({ ...n, conversion: n.impressions > 0 ? (n.followers / n.impressions * 1000) : 0 }))
+                .filter(n => n.conversion > 0)
+                .sort((a, b) => b.conversion - a.conversion)
+                .slice(0, 10);
+
+            const labels = withConversion.map(n => n.title.length > 18 ? n.title.substring(0, 18) + '...' : n.title);
+            const conversions = withConversion.map(n => n.conversion.toFixed(2));
+
+            conversionChart = new Chart(ctx, {
+                type: 'bar',
+                data: {
+                    labels: labels,
+                    datasets: [{ label: '每千曝光涨粉', data: conversions, backgroundColor: '#4ade80', borderRadius: 4 }]
+                },
+                options: {
+                    indexAxis: 'y',
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        legend: { display: false },
+                        tooltip: { callbacks: { title: ctx => withConversion[ctx[0].dataIndex].title } }
+                    },
+                    scales: {
+                        x: { ticks: { color: '#888' }, grid: { color: '#2a2a2a' } },
+                        y: { ticks: { color: '#888', font: { size: 11 } }, grid: { display: false } }
+                    }
+                }
+            });
+        }
+
+        // Ranking
+        function switchRanking(type, btn) {
+            document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+            btn.classList.add('active');
+            updateRanking(type);
+        }
+
+        function updateRanking(type) {
+            const list = document.getElementById('rankingList');
+            let sorted, getValue;
+
+            switch(type) {
+                case 'impressions':
+                    sorted = [...filteredData].sort((a, b) => b.impressions - a.impressions);
+                    getValue = n => formatNumber(n.impressions);
+                    break;
+                case 'interactions':
+                    sorted = [...filteredData].sort((a, b) =>
+                        (b.likes + b.collects + b.comments + b.shares) - (a.likes + a.collects + a.comments + a.shares));
+                    getValue = n => formatNumber(n.likes + n.collects + n.comments + n.shares);
+                    break;
+                case 'followers':
+                    sorted = [...filteredData].sort((a, b) => b.followers - a.followers);
+                    getValue = n => '+' + n.followers;
+                    break;
+            }
+
+            list.innerHTML = sorted.slice(0, 10).map((note, idx) => `
+                <div class="ranking-item">
+                    <div class="ranking-number ${idx < 3 ? 'top3' : ''}">${idx + 1}</div>
+                    <div class="ranking-content">
+                        <div class="ranking-title">${note.title}</div>
+                        <div class="ranking-stats">${note.date} · ${note.type}</div>
+                    </div>
+                    <div class="ranking-value">${getValue(note)}</div>
+                </div>
+            `).join('');
+        }
+
+        // Keywords
+        function updateKeywords() {
+            document.getElementById('highLikesKeywords').innerHTML = rawData.highLikesKeywords.slice(0, 15)
+                .map(([word, count]) => `<span class="keyword-tag pink">${word}<span class="keyword-count">${count}</span></span>`).join('');
+
+            document.getElementById('highFollowersKeywords').innerHTML = rawData.highFollowersKeywords.slice(0, 15)
+                .map(([word, count]) => `<span class="keyword-tag green">${word}<span class="keyword-count">${count}</span></span>`).join('');
+        }
+
+        // Init
+        initMonthPickers();
+        updateDashboard();
+    </script>
+</body>
+</html>
