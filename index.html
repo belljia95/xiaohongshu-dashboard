@@ -2,27 +2,54 @@
 <html lang="zh-CN">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>小红书数据分析看板</title>
+    <!-- 让iPhone正确显示页面宽度，禁止用户缩放 -->
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <!-- iPhone状态栏颜色 -->
+    <meta name="apple-mobile-web-app-status-bar-style" content="default">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <title>小红书数据分析</title>
+    <!-- Chart.js 图表库 -->
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <style>
-        * { margin: 0; padding: 0; box-sizing: border-box; }
-
-        body {
-            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
-            background: #0d0d0d;
-            color: #ffffff;
-            min-height: 100vh;
-            padding: 24px;
+        /* ========== 基础重置 ========== */
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
         }
 
+        /* ========== 小红书品牌色定义 ========== */
+        :root {
+            --xhs-red: #FF2442;           /* 小红书主红色 */
+            --xhs-red-light: #FF6B81;     /* 浅红色 */
+            --xhs-red-bg: #FFF5F5;        /* 红色背景 */
+            --xhs-white: #FFFFFF;         /* 纯白 */
+            --xhs-gray-100: #F8F9FA;      /* 最浅灰-背景 */
+            --xhs-gray-200: #E9ECEF;      /* 浅灰-边框 */
+            --xhs-gray-400: #ADB5BD;      /* 中灰-次要文字 */
+            --xhs-gray-600: #6C757D;      /* 深灰-说明文字 */
+            --xhs-gray-900: #212529;      /* 最深-主文字 */
+            --xhs-green: #10B981;         /* 成功/增长色 */
+        }
+
+        /* ========== 页面主体 ========== */
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'PingFang SC', 'Helvetica Neue', Arial, sans-serif;
+            background: var(--xhs-gray-100);
+            color: var(--xhs-gray-900);
+            min-height: 100vh;
+            padding: 20px;
+            -webkit-font-smoothing: antialiased;  /* 让文字更清晰 */
+        }
+
+        /* ========== 顶部标题区 ========== */
         .header {
             display: flex;
             justify-content: space-between;
             align-items: center;
             margin-bottom: 24px;
-            padding-bottom: 16px;
-            border-bottom: 1px solid #2a2a2a;
+            padding-bottom: 20px;
+            border-bottom: 1px solid var(--xhs-gray-200);
             flex-wrap: wrap;
             gap: 16px;
         }
@@ -33,59 +60,97 @@
             gap: 12px;
         }
 
+        /* 小红书风格的Logo图标 */
         .logo-icon {
-            width: 36px;
-            height: 36px;
-            background: linear-gradient(135deg, #ff6b6b, #ff8e8e);
-            border-radius: 8px;
+            width: 40px;
+            height: 40px;
+            background: var(--xhs-red);
+            border-radius: 10px;
             display: flex;
             align-items: center;
             justify-content: center;
-            font-size: 18px;
+            font-size: 20px;
+            color: white;
+            font-weight: bold;
         }
 
-        .logo-text h1 { font-size: 20px; font-weight: 600; }
-        .logo-text p { font-size: 12px; color: #888; }
+        .logo-text h1 {
+            font-size: 20px;
+            font-weight: 600;
+            color: var(--xhs-gray-900);
+        }
 
+        .logo-text p {
+            font-size: 12px;
+            color: var(--xhs-gray-400);
+            margin-top: 2px;
+        }
+
+        /* ========== 日期筛选器 ========== */
         .date-filter {
             display: flex;
             align-items: center;
-            gap: 12px;
-            background: #1a1a1a;
-            padding: 8px 16px;
-            border-radius: 8px;
-            border: 1px solid #2a2a2a;
+            gap: 10px;
+            background: var(--xhs-white);
+            padding: 10px 16px;
+            border-radius: 12px;
+            border: 1px solid var(--xhs-gray-200);
             flex-wrap: wrap;
         }
 
-        .date-filter label { font-size: 13px; color: #888; }
-
-        .date-filter select {
-            background: #0d0d0d;
-            border: 1px solid #3a3a3a;
-            color: #fff;
-            padding: 6px 10px;
-            border-radius: 4px;
+        .date-filter label {
             font-size: 13px;
-            cursor: pointer;
+            color: var(--xhs-gray-600);
         }
 
-        .date-filter select:focus { outline: none; border-color: #ff6b6b; }
+        .date-filter select {
+            background: var(--xhs-gray-100);
+            border: 1px solid var(--xhs-gray-200);
+            color: var(--xhs-gray-900);
+            padding: 8px 12px;
+            border-radius: 8px;
+            font-size: 13px;
+            cursor: pointer;
+            outline: none;
+        }
 
+        .date-filter select:focus {
+            border-color: var(--xhs-red);
+        }
+
+        /* 主按钮-小红书红色 */
         .date-filter button {
-            background: linear-gradient(135deg, #ff6b6b, #ff8e8e);
+            background: var(--xhs-red);
             border: none;
-            color: #fff;
-            padding: 6px 16px;
-            border-radius: 4px;
+            color: white;
+            padding: 8px 20px;
+            border-radius: 8px;
             cursor: pointer;
             font-size: 13px;
             font-weight: 500;
+            transition: all 0.2s;
         }
 
-        .date-filter button:hover { opacity: 0.9; }
-        .date-filter button.secondary { background: #2a2a2a; }
+        .date-filter button:hover {
+            background: #E61D3A;
+        }
 
+        .date-filter button:active {
+            transform: scale(0.98);
+        }
+
+        /* 次要按钮 */
+        .date-filter button.secondary {
+            background: var(--xhs-gray-200);
+            color: var(--xhs-gray-600);
+        }
+
+        .date-filter button.secondary:hover {
+            background: var(--xhs-gray-400);
+            color: white;
+        }
+
+        /* ========== 指标卡片网格 ========== */
         .metrics-grid {
             display: grid;
             grid-template-columns: repeat(5, 1fr);
@@ -93,242 +158,471 @@
             margin-bottom: 24px;
         }
 
+        /* 单个指标卡片 */
         .metric-card {
-            background: #1a1a1a;
-            border-radius: 12px;
+            background: var(--xhs-white);
+            border-radius: 16px;
             padding: 20px;
-            border: 1px solid #2a2a2a;
+            border: 1px solid var(--xhs-gray-200);
+            transition: all 0.2s;
         }
 
+        .metric-card:hover {
+            box-shadow: 0 4px 12px rgba(255, 36, 66, 0.1);
+            transform: translateY(-2px);
+        }
+
+        /* 卡片标签：中文在上，英文小字在下 */
         .metric-label {
+            margin-bottom: 12px;
+        }
+
+        .metric-label-cn {
+            font-size: 14px;
+            font-weight: 500;
+            color: var(--xhs-gray-900);
+            margin-bottom: 2px;
+        }
+
+        .metric-label-en {
             font-size: 11px;
-            color: #888;
+            color: var(--xhs-gray-400);
             text-transform: uppercase;
             letter-spacing: 0.5px;
-            margin-bottom: 8px;
         }
 
+        /* 指标数值 */
         .metric-value {
             font-size: 32px;
             font-weight: 700;
             margin-bottom: 4px;
+            font-variant-numeric: tabular-nums;  /* 数字等宽对齐 */
         }
 
-        .metric-value.pink { color: #ff6b6b; }
-        .metric-value.green { color: #4ade80; }
-        .metric-value.white { color: #ffffff; }
+        .metric-value.red { color: var(--xhs-red); }
+        .metric-value.green { color: var(--xhs-green); }
+        .metric-value.dark { color: var(--xhs-gray-900); }
 
-        .metric-subtitle { font-size: 11px; color: #4ade80; }
+        .metric-subtitle {
+            font-size: 12px;
+            color: var(--xhs-gray-400);
+        }
 
+        /* ========== 图表区域 ========== */
         .charts-grid {
             display: grid;
             grid-template-columns: 1fr;
-            gap: 24px;
+            gap: 20px;
             margin-bottom: 24px;
         }
 
         .chart-row {
             display: grid;
             grid-template-columns: 1fr 1fr;
-            gap: 24px;
+            gap: 20px;
         }
 
+        /* 图表卡片 */
         .chart-card {
-            background: #1a1a1a;
-            border-radius: 12px;
-            padding: 20px;
-            border: 1px solid #2a2a2a;
+            background: var(--xhs-white);
+            border-radius: 16px;
+            padding: 24px;
+            border: 1px solid var(--xhs-gray-200);
         }
 
-        .chart-card.full-width { grid-column: 1 / -1; }
+        .chart-card.full-width {
+            grid-column: 1 / -1;
+        }
 
         .chart-header {
             display: flex;
             justify-content: space-between;
             align-items: flex-start;
-            margin-bottom: 16px;
+            margin-bottom: 20px;
         }
 
-        .chart-title { font-size: 16px; font-weight: 600; }
-        .chart-subtitle { font-size: 12px; color: #888; margin-top: 4px; }
+        /* 图表标题：中文+英文小字 */
+        .chart-title {
+            font-size: 16px;
+            font-weight: 600;
+            color: var(--xhs-gray-900);
+        }
+
+        .chart-subtitle {
+            font-size: 12px;
+            color: var(--xhs-gray-400);
+            margin-top: 4px;
+        }
 
         .chart-note {
-            font-size: 11px;
-            color: #666;
-            background: #2a2a2a;
-            padding: 4px 8px;
-            border-radius: 4px;
+            font-size: 12px;
+            color: var(--xhs-red);
+            background: var(--xhs-red-bg);
+            padding: 6px 12px;
+            border-radius: 20px;
+            font-weight: 500;
         }
 
-        .chart-container { position: relative; height: 300px; }
-        .chart-container.tall { height: 400px; }
+        .chart-container {
+            position: relative;
+            height: 300px;
+        }
 
-        .keywords-section { display: grid; grid-template-columns: 1fr 1fr; gap: 24px; }
+        .chart-container.tall {
+            height: 380px;
+        }
+
+        /* ========== 关键词区域 ========== */
+        .keywords-section {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 20px;
+        }
 
         .keyword-cloud {
             display: flex;
             flex-wrap: wrap;
             gap: 8px;
-            padding: 16px 0;
+            padding: 12px 0;
         }
 
         .keyword-tag {
-            padding: 6px 12px;
-            border-radius: 16px;
+            padding: 6px 14px;
+            border-radius: 20px;
             font-size: 13px;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            transition: all 0.2s;
+        }
+
+        .keyword-tag:hover {
+            transform: scale(1.05);
+        }
+
+        /* 红色关键词标签 */
+        .keyword-tag.red {
+            background: var(--xhs-red-bg);
+            color: var(--xhs-red);
+            border: 1px solid rgba(255, 36, 66, 0.2);
+        }
+
+        /* 绿色关键词标签 */
+        .keyword-tag.green {
+            background: #ECFDF5;
+            color: var(--xhs-green);
+            border: 1px solid rgba(16, 185, 129, 0.2);
+        }
+
+        .keyword-count {
+            background: rgba(0,0,0,0.08);
+            padding: 2px 8px;
+            border-radius: 10px;
+            font-size: 11px;
+            font-weight: 500;
+        }
+
+        /* ========== 排行榜 ========== */
+        .ranking-list {
+            max-height: 320px;
+            overflow-y: auto;
+        }
+
+        /* 自定义滚动条 */
+        .ranking-list::-webkit-scrollbar {
+            width: 4px;
+        }
+
+        .ranking-list::-webkit-scrollbar-thumb {
+            background: var(--xhs-gray-200);
+            border-radius: 4px;
+        }
+
+        .ranking-item {
+            display: flex;
+            align-items: center;
+            padding: 12px 0;
+            border-bottom: 1px solid var(--xhs-gray-200);
+        }
+
+        .ranking-item:last-child {
+            border-bottom: none;
+        }
+
+        /* 排名数字 */
+        .ranking-number {
+            width: 28px;
+            height: 28px;
+            background: var(--xhs-gray-100);
+            border-radius: 8px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 13px;
+            font-weight: 600;
+            margin-right: 12px;
+            flex-shrink: 0;
+            color: var(--xhs-gray-600);
+        }
+
+        /* 前三名特殊样式 */
+        .ranking-number.top3 {
+            background: var(--xhs-red);
+            color: white;
+        }
+
+        .ranking-content {
+            flex: 1;
+            min-width: 0;
+        }
+
+        .ranking-title {
+            font-size: 14px;
+            font-weight: 500;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            margin-bottom: 4px;
+            color: var(--xhs-gray-900);
+        }
+
+        .ranking-stats {
+            font-size: 12px;
+            color: var(--xhs-gray-400);
+        }
+
+        .ranking-value {
+            font-size: 15px;
+            font-weight: 600;
+            color: var(--xhs-red);
+            margin-left: 12px;
+            flex-shrink: 0;
+        }
+
+        /* ========== 切换按钮组 ========== */
+        .tab-buttons {
+            display: flex;
+            gap: 8px;
+            margin-bottom: 16px;
+        }
+
+        .tab-btn {
+            background: var(--xhs-gray-100);
+            border: 1px solid var(--xhs-gray-200);
+            color: var(--xhs-gray-600);
+            padding: 8px 16px;
+            border-radius: 20px;
+            cursor: pointer;
+            font-size: 13px;
+            transition: all 0.2s;
+        }
+
+        .tab-btn:hover {
+            background: var(--xhs-red-bg);
+            color: var(--xhs-red);
+            border-color: var(--xhs-red);
+        }
+
+        .tab-btn.active {
+            background: var(--xhs-red);
+            color: white;
+            border-color: var(--xhs-red);
+        }
+
+        /* ========== 关键词分类标题 ========== */
+        .keyword-section-title {
+            font-size: 13px;
+            font-weight: 500;
+            margin-bottom: 8px;
             display: flex;
             align-items: center;
             gap: 6px;
         }
 
-        .keyword-tag.pink {
-            background: rgba(255, 107, 107, 0.2);
-            color: #ff8e8e;
-            border: 1px solid rgba(255, 107, 107, 0.3);
-        }
+        .keyword-section-title.red { color: var(--xhs-red); }
+        .keyword-section-title.green { color: var(--xhs-green); }
 
-        .keyword-tag.green {
-            background: rgba(74, 222, 128, 0.2);
-            color: #4ade80;
-            border: 1px solid rgba(74, 222, 128, 0.3);
-        }
-
-        .keyword-count {
-            background: rgba(255,255,255,0.1);
-            padding: 2px 6px;
-            border-radius: 10px;
-            font-size: 11px;
-        }
-
-        .ranking-list { max-height: 350px; overflow-y: auto; }
-
-        .ranking-item {
-            display: flex;
-            align-items: center;
-            padding: 10px 0;
-            border-bottom: 1px solid #2a2a2a;
-        }
-
-        .ranking-item:last-child { border-bottom: none; }
-
-        .ranking-number {
-            width: 24px;
-            height: 24px;
-            background: #2a2a2a;
-            border-radius: 4px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            font-size: 12px;
-            font-weight: 600;
-            margin-right: 12px;
-            flex-shrink: 0;
-        }
-
-        .ranking-number.top3 { background: linear-gradient(135deg, #ff6b6b, #ff8e8e); }
-
-        .ranking-content { flex: 1; min-width: 0; }
-
-        .ranking-title {
-            font-size: 13px;
-            white-space: nowrap;
-            overflow: hidden;
-            text-overflow: ellipsis;
-            margin-bottom: 4px;
-        }
-
-        .ranking-stats { font-size: 11px; color: #888; }
-
-        .ranking-value {
-            font-size: 14px;
-            font-weight: 600;
-            color: #4ade80;
-            margin-left: 12px;
-            flex-shrink: 0;
-        }
-
-        .tab-buttons { display: flex; gap: 8px; margin-bottom: 16px; }
-
-        .tab-btn {
-            background: #2a2a2a;
-            border: none;
-            color: #888;
-            padding: 6px 12px;
-            border-radius: 4px;
-            cursor: pointer;
-            font-size: 12px;
-        }
-
-        .tab-btn.active {
-            background: linear-gradient(135deg, #ff6b6b, #ff8e8e);
-            color: #fff;
-        }
-
+        /* ========== 响应式布局 - iPad ========== */
         @media (max-width: 1200px) {
-            .metrics-grid { grid-template-columns: repeat(3, 1fr); }
-            .chart-row, .keywords-section { grid-template-columns: 1fr; }
+            .metrics-grid {
+                grid-template-columns: repeat(3, 1fr);
+            }
+
+            .chart-row,
+            .keywords-section {
+                grid-template-columns: 1fr;
+            }
         }
 
+        /* ========== 响应式布局 - iPhone ========== */
         @media (max-width: 768px) {
-            .metrics-grid { grid-template-columns: repeat(2, 1fr); }
-            .header { flex-direction: column; align-items: flex-start; }
-            body { padding: 16px; }
+            body {
+                padding: 16px;
+            }
+
+            .header {
+                flex-direction: column;
+                align-items: stretch;
+                gap: 12px;
+            }
+
+            .logo {
+                justify-content: center;
+            }
+
+            .date-filter {
+                justify-content: center;
+            }
+
+            /* 手机上显示2列指标卡片 */
+            .metrics-grid {
+                grid-template-columns: repeat(2, 1fr);
+                gap: 12px;
+            }
+
+            .metric-card {
+                padding: 16px;
+            }
+
+            .metric-value {
+                font-size: 24px;
+            }
+
+            .metric-label-cn {
+                font-size: 13px;
+            }
+
+            .chart-card {
+                padding: 16px;
+            }
+
+            .chart-container {
+                height: 250px;
+            }
+
+            .chart-container.tall {
+                height: 300px;
+            }
+
+            .chart-title {
+                font-size: 15px;
+            }
+
+            .tab-btn {
+                padding: 6px 12px;
+                font-size: 12px;
+            }
+        }
+
+        /* ========== 响应式布局 - iPhone SE等小屏 ========== */
+        @media (max-width: 375px) {
+            body {
+                padding: 12px;
+            }
+
+            .metric-value {
+                font-size: 22px;
+            }
+
+            .logo-text h1 {
+                font-size: 18px;
+            }
+
+            .date-filter {
+                padding: 8px 12px;
+            }
+
+            .date-filter select {
+                padding: 6px 8px;
+                font-size: 12px;
+            }
+
+            .date-filter button {
+                padding: 6px 14px;
+                font-size: 12px;
+            }
+        }
+
+        /* ========== iPhone安全区域适配 ========== */
+        @supports (padding-bottom: env(safe-area-inset-bottom)) {
+            body {
+                padding-bottom: calc(20px + env(safe-area-inset-bottom));
+            }
         }
     </style>
 </head>
 <body>
+    <!-- ===== 顶部标题区 ===== -->
     <div class="header">
         <div class="logo">
             <div class="logo-icon">📊</div>
             <div class="logo-text">
-                <h1>Strategy Dashboard</h1>
-                <p>小红书数据分析 · Growth Analysis</p>
+                <h1>数据分析看板</h1>
+                <p>Xiaohongshu Analytics Dashboard</p>
             </div>
         </div>
         <div class="date-filter">
-            <label>起始月份</label>
+            <label>起始</label>
             <select id="startMonth"></select>
-            <label>结束月份</label>
+            <label>结束</label>
             <select id="endMonth"></select>
             <button onclick="applyFilter()">筛选</button>
             <button class="secondary" onclick="resetFilter()">重置</button>
         </div>
     </div>
 
+    <!-- ===== 核心指标卡片 ===== -->
     <div class="metrics-grid">
         <div class="metric-card">
-            <div class="metric-label">Total Impressions</div>
-            <div class="metric-value pink" id="totalImpressions">-</div>
-            <div class="metric-subtitle">总曝光量</div>
+            <div class="metric-label">
+                <div class="metric-label-cn">总曝光量</div>
+                <div class="metric-label-en">Total Impressions</div>
+            </div>
+            <div class="metric-value red" id="totalImpressions">-</div>
+            <div class="metric-subtitle">笔记被展示的次数</div>
         </div>
         <div class="metric-card">
-            <div class="metric-label">Avg. CTR</div>
-            <div class="metric-value white" id="avgCtr">-</div>
-            <div class="metric-subtitle">平均点击率</div>
+            <div class="metric-label">
+                <div class="metric-label-cn">平均点击率</div>
+                <div class="metric-label-en">Average CTR</div>
+            </div>
+            <div class="metric-value dark" id="avgCtr">-</div>
+            <div class="metric-subtitle">点击数 / 曝光数</div>
         </div>
         <div class="metric-card">
-            <div class="metric-label">Total Interactions</div>
-            <div class="metric-value white" id="totalInteractions">-</div>
+            <div class="metric-label">
+                <div class="metric-label-cn">总互动量</div>
+                <div class="metric-label-en">Total Interactions</div>
+            </div>
+            <div class="metric-value dark" id="totalInteractions">-</div>
             <div class="metric-subtitle">赞+藏+评+分享</div>
         </div>
         <div class="metric-card">
-            <div class="metric-label">Utility Ratio</div>
+            <div class="metric-label">
+                <div class="metric-label-cn">实用性指数</div>
+                <div class="metric-label-en">Utility Ratio</div>
+            </div>
             <div class="metric-value green" id="utilityRatio">-</div>
             <div class="metric-subtitle">收藏 / 点赞</div>
         </div>
         <div class="metric-card">
-            <div class="metric-label">Follower Gain</div>
-            <div class="metric-value green" id="totalFollowers">-</div>
-            <div class="metric-subtitle">总涨粉</div>
+            <div class="metric-label">
+                <div class="metric-label-cn">总涨粉数</div>
+                <div class="metric-label-en">Follower Gain</div>
+            </div>
+            <div class="metric-value red" id="totalFollowers">-</div>
+            <div class="metric-subtitle">新增关注者</div>
         </div>
     </div>
 
+    <!-- ===== 图表区域 ===== -->
     <div class="charts-grid">
+        <!-- 北极星指标图 -->
         <div class="chart-card full-width">
             <div class="chart-header">
                 <div>
-                    <div class="chart-title">The North Star</div>
-                    <div class="chart-subtitle">Reach (Impressions) vs. Growth (Followers) - 按笔记分析</div>
+                    <div class="chart-title">核心指标趋势</div>
+                    <div class="chart-subtitle">North Star Metrics - 曝光量 vs 涨粉数</div>
                 </div>
                 <div class="chart-note" id="noteCount">共 0 篇笔记</div>
             </div>
@@ -338,17 +632,19 @@
         </div>
 
         <div class="chart-row">
+            <!-- 涨粉趋势图 -->
             <div class="chart-card">
                 <div class="chart-title">涨粉趋势</div>
-                <div class="chart-subtitle">Follower Growth Over Time - 按时间分析</div>
+                <div class="chart-subtitle">Follower Growth Over Time</div>
                 <div class="chart-container">
                     <canvas id="followerTrendChart"></canvas>
                 </div>
             </div>
 
+            <!-- 转化率排行 -->
             <div class="chart-card">
-                <div class="chart-title">Follower Conversion</div>
-                <div class="chart-subtitle">每千次曝光涨粉数 - Top 10</div>
+                <div class="chart-title">涨粉效率 Top 10</div>
+                <div class="chart-subtitle">Followers per 1K Impressions</div>
                 <div class="chart-container">
                     <canvas id="conversionChart"></canvas>
                 </div>
@@ -356,6 +652,7 @@
         </div>
 
         <div class="chart-row">
+            <!-- 笔记排行榜 -->
             <div class="chart-card">
                 <div class="chart-title">笔记排行榜</div>
                 <div class="chart-subtitle">Top Performing Notes</div>
@@ -367,15 +664,16 @@
                 <div class="ranking-list" id="rankingList"></div>
             </div>
 
+            <!-- 关键词分析 -->
             <div class="chart-card">
-                <div class="chart-title">Keyword Analysis</div>
-                <div class="chart-subtitle">标题关键词分析</div>
-                <div style="margin-bottom: 16px;">
-                    <div style="font-size: 12px; color: #ff8e8e; margin-bottom: 8px;">🔥 高赞笔记关键词</div>
+                <div class="chart-title">标题关键词分析</div>
+                <div class="chart-subtitle">Keyword Analysis</div>
+                <div style="margin-bottom: 20px;">
+                    <div class="keyword-section-title red">🔥 高赞笔记关键词</div>
                     <div class="keyword-cloud" id="highLikesKeywords"></div>
                 </div>
                 <div>
-                    <div style="font-size: 12px; color: #4ade80; margin-bottom: 8px;">📈 高转化笔记关键词</div>
+                    <div class="keyword-section-title green">📈 高转化笔记关键词</div>
                     <div class="keyword-cloud" id="highFollowersKeywords"></div>
                 </div>
             </div>
@@ -383,6 +681,8 @@
     </div>
 
     <script>
+        // ========== 数据源 ==========
+        // 这里的数据会被更新脚本自动替换
         const rawData = {
   "notes": [
     {
@@ -461,7 +761,7 @@
       "avgViewTime": 9
     },
     {
-      "title": "突然就明白了“成熟的爱”是这样的🩵",
+      "title": "突然就明白了"成熟的爱"是这样的🩵",
       "date": "2025-08-24",
       "month": "2025-08",
       "type": "图文",
@@ -536,7 +836,7 @@
       "avgViewTime": 7
     },
     {
-      "title": "为什么我的“AI精神导师”双双提到Builder🤔",
+      "title": "为什么我的"AI精神导师"双双提到Builder🤔",
       "date": "2025-09-03",
       "month": "2025-09",
       "type": "图文",
@@ -1551,259 +1851,79 @@
     "2026-02"
   ],
   "highLikesKeywords": [
-    [
-      "北美",
-      3
-    ],
-    [
-      "职场",
-      3
-    ],
-    [
-      "原来",
-      3
-    ],
-    [
-      "ai",
-      3
-    ],
-    [
-      "油管",
-      2
-    ],
-    [
-      "神教",
-      2
-    ],
-    [
-      "ceo",
-      2
-    ],
-    [
-      "一样",
-      2
-    ],
-    [
-      "表达",
-      2
-    ],
-    [
-      "思考",
-      2
-    ],
-    [
-      "重要",
-      2
-    ],
-    [
-      "记录",
-      2
-    ],
-    [
-      "提高",
-      1
-    ],
-    [
-      "small",
-      1
-    ],
-    [
-      "talk",
-      1
-    ],
-    [
-      "能力",
-      1
-    ],
-    [
-      "打车",
-      1
-    ],
-    [
-      "人情世故",
-      1
-    ],
-    [
-      "加分",
-      1
-    ],
-    [
-      "tips",
-      1
-    ],
-    [
-      "入职",
-      1
-    ],
-    [
-      "三个",
-      1
-    ],
-    [
-      "降低",
-      1
-    ],
-    [
-      "信噪比",
-      1
-    ],
-    [
-      "感悟",
-      1
-    ],
-    [
-      "健身",
-      1
-    ],
-    [
-      "明白",
-      1
-    ],
-    [
-      "真相",
-      1
-    ],
-    [
-      "按头",
-      1
-    ],
-    [
-      "安利",
-      1
-    ]
+    ["北美", 3],
+    ["职场", 3],
+    ["原来", 3],
+    ["ai", 3],
+    ["油管", 2],
+    ["神教", 2],
+    ["ceo", 2],
+    ["一样", 2],
+    ["表达", 2],
+    ["思考", 2],
+    ["重要", 2],
+    ["记录", 2],
+    ["提高", 1],
+    ["small", 1],
+    ["talk", 1],
+    ["能力", 1],
+    ["打车", 1],
+    ["人情世故", 1],
+    ["加分", 1],
+    ["tips", 1],
+    ["入职", 1],
+    ["三个", 1],
+    ["降低", 1],
+    ["信噪比", 1],
+    ["感悟", 1],
+    ["健身", 1],
+    ["明白", 1],
+    ["真相", 1],
+    ["按头", 1],
+    ["安利", 1]
   ],
   "highFollowersKeywords": [
-    [
-      "ai",
-      6
-    ],
-    [
-      "北美",
-      3
-    ],
-    [
-      "职场",
-      3
-    ],
-    [
-      "油管",
-      2
-    ],
-    [
-      "神教",
-      2
-    ],
-    [
-      "ceo",
-      2
-    ],
-    [
-      "一样",
-      2
-    ],
-    [
-      "表达",
-      2
-    ],
-    [
-      "重要",
-      2
-    ],
-    [
-      "围观",
-      2
-    ],
-    [
-      "硅谷",
-      2
-    ],
-    [
-      "产品",
-      2
-    ],
-    [
-      "离职",
-      2
-    ],
-    [
-      "感悟",
-      2
-    ],
-    [
-      "agent",
-      2
-    ],
-    [
-      "课程",
-      2
-    ],
-    [
-      "提高",
-      1
-    ],
-    [
-      "small",
-      1
-    ],
-    [
-      "talk",
-      1
-    ],
-    [
-      "能力",
-      1
-    ],
-    [
-      "打车",
-      1
-    ],
-    [
-      "分享",
-      1
-    ],
-    [
-      "工具",
-      1
-    ],
-    [
-      "做播客",
-      1
-    ],
-    [
-      "知识库",
-      1
-    ],
-    [
-      "入职",
-      1
-    ],
-    [
-      "三个",
-      1
-    ],
-    [
-      "思考",
-      1
-    ],
-    [
-      "降低",
-      1
-    ],
-    [
-      "信噪比",
-      1
-    ]
+    ["ai", 6],
+    ["北美", 3],
+    ["职场", 3],
+    ["油管", 2],
+    ["神教", 2],
+    ["ceo", 2],
+    ["一样", 2],
+    ["表达", 2],
+    ["重要", 2],
+    ["围观", 2],
+    ["硅谷", 2],
+    ["产品", 2],
+    ["离职", 2],
+    ["感悟", 2],
+    ["agent", 2],
+    ["课程", 2],
+    ["提高", 1],
+    ["small", 1],
+    ["talk", 1],
+    ["能力", 1],
+    ["打车", 1],
+    ["分享", 1],
+    ["工具", 1],
+    ["做播客", 1],
+    ["知识库", 1],
+    ["入职", 1],
+    ["三个", 1],
+    ["思考", 1],
+    ["降低", 1],
+    ["信噪比", 1]
   ]
 };
 
+        // ========== 全局变量 ==========
         let filteredData = [...rawData.notes];
         let northStarChart, followerTrendChart, conversionChart;
 
-        // Initialize month dropdowns
+        // ========== 初始化月份选择器 ==========
         function initMonthPickers() {
             const startSelect = document.getElementById('startMonth');
             const endSelect = document.getElementById('endMonth');
-
             const months = rawData.months;
             const options = months.map(m => `<option value="${m}">${m}</option>`).join('');
 
@@ -1816,7 +1936,7 @@
             }
         }
 
-        // Apply month filter
+        // ========== 筛选功能 ==========
         function applyFilter() {
             const startMonth = document.getElementById('startMonth').value;
             const endMonth = document.getElementById('endMonth').value;
@@ -1829,20 +1949,19 @@
             updateDashboard();
         }
 
-        // Reset filter
         function resetFilter() {
             filteredData = [...rawData.notes];
             initMonthPickers();
             updateDashboard();
         }
 
-        // Format number
+        // ========== 数字格式化 ==========
         function formatNumber(num) {
             if (num >= 10000) return (num / 10000).toFixed(1) + 'w';
             return num.toLocaleString();
         }
 
-        // Update dashboard
+        // ========== 更新整个看板 ==========
         function updateDashboard() {
             updateMetrics();
             updateNorthStarChart();
@@ -1852,7 +1971,7 @@
             updateKeywords();
         }
 
-        // Update metrics
+        // ========== 更新指标卡片 ==========
         function updateMetrics() {
             const totalImpressions = filteredData.reduce((sum, n) => sum + n.impressions, 0);
             const avgCtr = filteredData.length > 0
@@ -1868,17 +1987,17 @@
             document.getElementById('avgCtr').textContent = avgCtr + '%';
             document.getElementById('totalInteractions').textContent = formatNumber(totalInteractions);
             document.getElementById('utilityRatio').textContent = utilityRatio;
-            document.getElementById('totalFollowers').textContent = totalFollowers;
+            document.getElementById('totalFollowers').textContent = '+' + totalFollowers;
         }
 
-        // North Star Chart
+        // ========== 北极星图表 ==========
         function updateNorthStarChart() {
             const ctx = document.getElementById('northStarChart').getContext('2d');
             if (northStarChart) northStarChart.destroy();
 
             document.getElementById('noteCount').textContent = `共 ${filteredData.length} 篇笔记`;
 
-            const labels = filteredData.map(n => n.title.length > 12 ? n.title.substring(0, 12) + '...' : n.title);
+            const labels = filteredData.map(n => n.title.length > 10 ? n.title.substring(0, 10) + '...' : n.title);
             const impressions = filteredData.map(n => n.impressions);
             const followers = filteredData.map(n => n.followers);
 
@@ -1888,22 +2007,22 @@
                     labels: labels,
                     datasets: [
                         {
-                            label: 'Impressions',
+                            label: '曝光量',
                             data: impressions,
-                            borderColor: '#ff6b6b',
-                            backgroundColor: 'rgba(255, 107, 107, 0.1)',
+                            borderColor: '#FF2442',
+                            backgroundColor: 'rgba(255, 36, 66, 0.1)',
                             borderWidth: 2,
                             fill: true,
-                            tension: 0.3,
+                            tension: 0.4,
                             yAxisID: 'y'
                         },
                         {
-                            label: 'Follower Gain',
+                            label: '涨粉数',
                             data: followers,
-                            borderColor: '#4ade80',
-                            backgroundColor: '#4ade80',
+                            borderColor: '#10B981',
+                            backgroundColor: '#10B981',
                             borderWidth: 2,
-                            pointRadius: 5,
+                            pointRadius: 4,
                             pointStyle: 'circle',
                             showLine: true,
                             borderDash: [5, 5],
@@ -1919,9 +2038,15 @@
                         legend: {
                             position: 'top',
                             align: 'end',
-                            labels: { color: '#888', usePointStyle: true }
+                            labels: { color: '#6C757D', usePointStyle: true, padding: 20 }
                         },
                         tooltip: {
+                            backgroundColor: '#fff',
+                            titleColor: '#212529',
+                            bodyColor: '#6C757D',
+                            borderColor: '#E9ECEF',
+                            borderWidth: 1,
+                            cornerRadius: 8,
                             callbacks: {
                                 title: function(context) {
                                     return filteredData[context[0].dataIndex].title;
@@ -1931,29 +2056,29 @@
                     },
                     scales: {
                         x: {
-                            ticks: { color: '#888', maxRotation: 45, minRotation: 45, font: { size: 10 } },
-                            grid: { color: '#2a2a2a' }
+                            ticks: { color: '#ADB5BD', maxRotation: 45, minRotation: 45, font: { size: 10 } },
+                            grid: { color: '#F8F9FA' }
                         },
                         y: {
                             type: 'linear',
                             position: 'left',
-                            ticks: { color: '#ff6b6b', callback: v => formatNumber(v) },
-                            grid: { color: '#2a2a2a' },
-                            title: { display: true, text: 'Impressions', color: '#ff6b6b' }
+                            ticks: { color: '#FF2442', callback: v => formatNumber(v) },
+                            grid: { color: '#F8F9FA' },
+                            title: { display: true, text: '曝光量', color: '#FF2442' }
                         },
                         y1: {
                             type: 'linear',
                             position: 'right',
-                            ticks: { color: '#4ade80' },
+                            ticks: { color: '#10B981' },
                             grid: { display: false },
-                            title: { display: true, text: 'Followers', color: '#4ade80' }
+                            title: { display: true, text: '涨粉数', color: '#10B981' }
                         }
                     }
                 }
             });
         }
 
-        // Follower Trend Chart
+        // ========== 涨粉趋势图 ==========
         function updateFollowerTrendChart() {
             const ctx = document.getElementById('followerTrendChart').getContext('2d');
             if (followerTrendChart) followerTrendChart.destroy();
@@ -1979,21 +2104,21 @@
                         {
                             label: '累计涨粉',
                             data: cumulativeFollowers,
-                            borderColor: '#4ade80',
-                            backgroundColor: 'rgba(74, 222, 128, 0.1)',
+                            borderColor: '#10B981',
+                            backgroundColor: 'rgba(16, 185, 129, 0.1)',
                             borderWidth: 2,
                             fill: true,
-                            tension: 0.3
+                            tension: 0.4
                         },
                         {
                             label: '当日涨粉',
                             data: followers,
-                            borderColor: '#ff6b6b',
-                            backgroundColor: '#ff6b6b',
+                            borderColor: '#FF2442',
+                            backgroundColor: '#FF2442',
                             borderWidth: 0,
-                            pointRadius: 4,
+                            pointRadius: 3,
                             type: 'bar',
-                            barThickness: 8
+                            barThickness: 6
                         }
                     ]
                 },
@@ -2001,17 +2126,25 @@
                     responsive: true,
                     maintainAspectRatio: false,
                     plugins: {
-                        legend: { position: 'top', align: 'end', labels: { color: '#888', usePointStyle: true } }
+                        legend: { position: 'top', align: 'end', labels: { color: '#6C757D', usePointStyle: true } },
+                        tooltip: {
+                            backgroundColor: '#fff',
+                            titleColor: '#212529',
+                            bodyColor: '#6C757D',
+                            borderColor: '#E9ECEF',
+                            borderWidth: 1,
+                            cornerRadius: 8
+                        }
                     },
                     scales: {
-                        x: { ticks: { color: '#888', maxRotation: 45, minRotation: 45, font: { size: 10 } }, grid: { color: '#2a2a2a' } },
-                        y: { ticks: { color: '#888' }, grid: { color: '#2a2a2a' } }
+                        x: { ticks: { color: '#ADB5BD', maxRotation: 45, minRotation: 45, font: { size: 10 } }, grid: { color: '#F8F9FA' } },
+                        y: { ticks: { color: '#ADB5BD' }, grid: { color: '#F8F9FA' } }
                     }
                 }
             });
         }
 
-        // Conversion Chart
+        // ========== 转化率排行图 ==========
         function updateConversionChart() {
             const ctx = document.getElementById('conversionChart').getContext('2d');
             if (conversionChart) conversionChart.destroy();
@@ -2022,14 +2155,19 @@
                 .sort((a, b) => b.conversion - a.conversion)
                 .slice(0, 10);
 
-            const labels = withConversion.map(n => n.title.length > 18 ? n.title.substring(0, 18) + '...' : n.title);
+            const labels = withConversion.map(n => n.title.length > 16 ? n.title.substring(0, 16) + '...' : n.title);
             const conversions = withConversion.map(n => n.conversion.toFixed(2));
 
             conversionChart = new Chart(ctx, {
                 type: 'bar',
                 data: {
                     labels: labels,
-                    datasets: [{ label: '每千曝光涨粉', data: conversions, backgroundColor: '#4ade80', borderRadius: 4 }]
+                    datasets: [{
+                        label: '每千曝光涨粉',
+                        data: conversions,
+                        backgroundColor: '#10B981',
+                        borderRadius: 6
+                    }]
                 },
                 options: {
                     indexAxis: 'y',
@@ -2037,17 +2175,25 @@
                     maintainAspectRatio: false,
                     plugins: {
                         legend: { display: false },
-                        tooltip: { callbacks: { title: ctx => withConversion[ctx[0].dataIndex].title } }
+                        tooltip: {
+                            backgroundColor: '#fff',
+                            titleColor: '#212529',
+                            bodyColor: '#6C757D',
+                            borderColor: '#E9ECEF',
+                            borderWidth: 1,
+                            cornerRadius: 8,
+                            callbacks: { title: ctx => withConversion[ctx[0].dataIndex].title }
+                        }
                     },
                     scales: {
-                        x: { ticks: { color: '#888' }, grid: { color: '#2a2a2a' } },
-                        y: { ticks: { color: '#888', font: { size: 11 } }, grid: { display: false } }
+                        x: { ticks: { color: '#ADB5BD' }, grid: { color: '#F8F9FA' } },
+                        y: { ticks: { color: '#6C757D', font: { size: 11 } }, grid: { display: false } }
                     }
                 }
             });
         }
 
-        // Ranking
+        // ========== 排行榜切换 ==========
         function switchRanking(type, btn) {
             document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
             btn.classList.add('active');
@@ -2086,16 +2232,16 @@
             `).join('');
         }
 
-        // Keywords
+        // ========== 关键词云 ==========
         function updateKeywords() {
-            document.getElementById('highLikesKeywords').innerHTML = rawData.highLikesKeywords.slice(0, 15)
-                .map(([word, count]) => `<span class="keyword-tag pink">${word}<span class="keyword-count">${count}</span></span>`).join('');
+            document.getElementById('highLikesKeywords').innerHTML = rawData.highLikesKeywords.slice(0, 12)
+                .map(([word, count]) => `<span class="keyword-tag red">${word}<span class="keyword-count">${count}</span></span>`).join('');
 
-            document.getElementById('highFollowersKeywords').innerHTML = rawData.highFollowersKeywords.slice(0, 15)
+            document.getElementById('highFollowersKeywords').innerHTML = rawData.highFollowersKeywords.slice(0, 12)
                 .map(([word, count]) => `<span class="keyword-tag green">${word}<span class="keyword-count">${count}</span></span>`).join('');
         }
 
-        // Init
+        // ========== 页面加载完成后初始化 ==========
         initMonthPickers();
         updateDashboard();
     </script>
