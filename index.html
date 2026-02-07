@@ -2,54 +2,101 @@
 <html lang="zh-CN">
 <head>
     <meta charset="UTF-8">
-    <!-- 让iPhone正确显示页面宽度，禁止用户缩放 -->
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <!-- iPhone状态栏颜色 -->
-    <meta name="apple-mobile-web-app-status-bar-style" content="default">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
     <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="theme-color" content="#09090b">
     <title>小红书数据分析</title>
-    <!-- Chart.js 图表库 -->
+
+    <!-- Google Fonts: Inter + JetBrains Mono -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;600;700&display=swap" rel="stylesheet">
+
+    <!-- Chart.js -->
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
     <style>
-        /* ========== 基础重置 ========== */
+        /* ========================================
+           TECH-MINIMALIST DARK MODE THEME
+           Inspired by Linear, Vercel, Raycast
+        ======================================== */
+
+        :root {
+            /* Dark Background Palette */
+            --bg-base: #09090b;           /* zinc-950 */
+            --bg-card: rgba(24, 24, 27, 0.5);  /* zinc-900/50 - glass effect */
+            --bg-card-hover: rgba(39, 39, 42, 0.5); /* zinc-800/50 */
+            --bg-elevated: #18181b;       /* zinc-900 */
+
+            /* Border Colors */
+            --border-default: #27272a;    /* zinc-800 */
+            --border-hover: #3f3f46;      /* zinc-700 */
+            --border-subtle: rgba(63, 63, 70, 0.5);
+
+            /* Text Colors */
+            --text-primary: #fafafa;      /* zinc-50 */
+            --text-secondary: #a1a1aa;    /* zinc-400 */
+            --text-muted: #71717a;        /* zinc-500 */
+            --text-dim: #52525b;          /* zinc-600 */
+
+            /* Accent - Neon Red (Electric Xiaohongshu) */
+            --accent: #FF4D6D;
+            --accent-glow: rgba(255, 77, 109, 0.4);
+            --accent-subtle: rgba(255, 77, 109, 0.15);
+            --accent-border: rgba(255, 77, 109, 0.3);
+
+            /* Success/Growth - Neon Green */
+            --success: #10B981;
+            --success-glow: rgba(16, 185, 129, 0.4);
+            --success-subtle: rgba(16, 185, 129, 0.15);
+            --success-border: rgba(16, 185, 129, 0.3);
+
+            /* Fonts */
+            --font-sans: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+            --font-mono: 'JetBrains Mono', 'Fira Code', 'Consolas', monospace;
+        }
+
         * {
             margin: 0;
             padding: 0;
             box-sizing: border-box;
         }
 
-        /* ========== 小红书品牌色定义 ========== */
-        :root {
-            --xhs-red: #FF2442;           /* 小红书主红色 */
-            --xhs-red-light: #FF6B81;     /* 浅红色 */
-            --xhs-red-bg: #FFF5F5;        /* 红色背景 */
-            --xhs-white: #FFFFFF;         /* 纯白 */
-            --xhs-gray-100: #F8F9FA;      /* 最浅灰-背景 */
-            --xhs-gray-200: #E9ECEF;      /* 浅灰-边框 */
-            --xhs-gray-400: #ADB5BD;      /* 中灰-次要文字 */
-            --xhs-gray-600: #6C757D;      /* 深灰-说明文字 */
-            --xhs-gray-900: #212529;      /* 最深-主文字 */
-            --xhs-green: #10B981;         /* 成功/增长色 */
-        }
-
-        /* ========== 页面主体 ========== */
         body {
-            font-family: -apple-system, BlinkMacSystemFont, 'PingFang SC', 'Helvetica Neue', Arial, sans-serif;
-            background: var(--xhs-gray-100);
-            color: var(--xhs-gray-900);
+            font-family: var(--font-sans);
+            background: var(--bg-base);
+            color: var(--text-primary);
             min-height: 100vh;
-            padding: 20px;
-            -webkit-font-smoothing: antialiased;  /* 让文字更清晰 */
+            padding: 24px;
+            -webkit-font-smoothing: antialiased;
+            -moz-osx-font-smoothing: grayscale;
         }
 
-        /* ========== 顶部标题区 ========== */
+        /* Subtle grid background pattern */
+        body::before {
+            content: '';
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-image:
+                linear-gradient(rgba(255,255,255,0.02) 1px, transparent 1px),
+                linear-gradient(90deg, rgba(255,255,255,0.02) 1px, transparent 1px);
+            background-size: 60px 60px;
+            pointer-events: none;
+            z-index: -1;
+        }
+
+        /* ========== HEADER ========== */
         .header {
             display: flex;
             justify-content: space-between;
             align-items: center;
-            margin-bottom: 24px;
-            padding-bottom: 20px;
-            border-bottom: 1px solid var(--xhs-gray-200);
+            margin-bottom: 32px;
+            padding-bottom: 24px;
+            border-bottom: 1px solid var(--border-default);
             flex-wrap: wrap;
             gap: 16px;
         }
@@ -57,100 +104,111 @@
         .logo {
             display: flex;
             align-items: center;
-            gap: 12px;
+            gap: 14px;
         }
 
-        /* 小红书风格的Logo图标 */
         .logo-icon {
-            width: 40px;
-            height: 40px;
-            background: var(--xhs-red);
-            border-radius: 10px;
+            width: 42px;
+            height: 42px;
+            background: linear-gradient(135deg, var(--accent), #FF6B81);
+            border-radius: 12px;
             display: flex;
             align-items: center;
             justify-content: center;
             font-size: 20px;
-            color: white;
-            font-weight: bold;
+            box-shadow: 0 0 20px var(--accent-glow);
         }
 
         .logo-text h1 {
-            font-size: 20px;
+            font-size: 18px;
             font-weight: 600;
-            color: var(--xhs-gray-900);
+            color: var(--text-primary);
+            letter-spacing: -0.02em;
         }
 
         .logo-text p {
             font-size: 12px;
-            color: var(--xhs-gray-400);
-            margin-top: 2px;
+            color: var(--text-muted);
+            font-family: var(--font-mono);
+            letter-spacing: 0.05em;
         }
 
-        /* ========== 日期筛选器 ========== */
+        /* ========== DATE FILTER ========== */
         .date-filter {
             display: flex;
             align-items: center;
-            gap: 10px;
-            background: var(--xhs-white);
+            gap: 12px;
+            background: var(--bg-card);
+            backdrop-filter: blur(10px);
             padding: 10px 16px;
-            border-radius: 12px;
-            border: 1px solid var(--xhs-gray-200);
+            border-radius: 10px;
+            border: 1px solid var(--border-default);
             flex-wrap: wrap;
         }
 
         .date-filter label {
-            font-size: 13px;
-            color: var(--xhs-gray-600);
+            font-size: 12px;
+            color: var(--text-muted);
+            font-family: var(--font-mono);
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
         }
 
         .date-filter select {
-            background: var(--xhs-gray-100);
-            border: 1px solid var(--xhs-gray-200);
-            color: var(--xhs-gray-900);
+            background: var(--bg-base);
+            border: 1px solid var(--border-default);
+            color: var(--text-primary);
             padding: 8px 12px;
-            border-radius: 8px;
+            border-radius: 6px;
             font-size: 13px;
+            font-family: var(--font-mono);
             cursor: pointer;
             outline: none;
+            transition: all 0.2s ease;
+        }
+
+        .date-filter select:hover {
+            border-color: var(--border-hover);
         }
 
         .date-filter select:focus {
-            border-color: var(--xhs-red);
+            border-color: var(--accent);
+            box-shadow: 0 0 0 2px var(--accent-subtle);
         }
 
-        /* 主按钮-小红书红色 */
         .date-filter button {
-            background: var(--xhs-red);
+            background: var(--accent);
             border: none;
             color: white;
-            padding: 8px 20px;
-            border-radius: 8px;
+            padding: 8px 18px;
+            border-radius: 6px;
             cursor: pointer;
-            font-size: 13px;
+            font-size: 12px;
             font-weight: 500;
-            transition: all 0.2s;
+            font-family: var(--font-mono);
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+            transition: all 0.2s ease;
         }
 
         .date-filter button:hover {
-            background: #E61D3A;
+            box-shadow: 0 0 20px var(--accent-glow);
+            transform: translateY(-1px);
         }
 
-        .date-filter button:active {
-            transform: scale(0.98);
-        }
-
-        /* 次要按钮 */
         .date-filter button.secondary {
-            background: var(--xhs-gray-200);
-            color: var(--xhs-gray-600);
+            background: transparent;
+            border: 1px solid var(--border-default);
+            color: var(--text-secondary);
         }
 
         .date-filter button.secondary:hover {
-            background: var(--xhs-gray-400);
-            color: white;
+            border-color: var(--border-hover);
+            color: var(--text-primary);
+            box-shadow: none;
         }
 
-        /* ========== 指标卡片网格 ========== */
+        /* ========== METRICS GRID ========== */
         .metrics-grid {
             display: grid;
             grid-template-columns: repeat(5, 1fr);
@@ -158,57 +216,87 @@
             margin-bottom: 24px;
         }
 
-        /* 单个指标卡片 */
+        /* ========== METRIC CARD (Glass Design) ========== */
         .metric-card {
-            background: var(--xhs-white);
-            border-radius: 16px;
+            background: var(--bg-card);
+            backdrop-filter: blur(10px);
+            border-radius: 12px;
             padding: 20px;
-            border: 1px solid var(--xhs-gray-200);
-            transition: all 0.2s;
+            border: 1px solid var(--border-default);
+            transition: all 0.3s ease;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .metric-card::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 1px;
+            background: linear-gradient(90deg, transparent, var(--border-hover), transparent);
+            opacity: 0;
+            transition: opacity 0.3s ease;
         }
 
         .metric-card:hover {
-            box-shadow: 0 4px 12px rgba(255, 36, 66, 0.1);
-            transform: translateY(-2px);
+            border-color: var(--border-hover);
+            background: var(--bg-card-hover);
         }
 
-        /* 卡片标签：中文在上，英文小字在下 */
+        .metric-card:hover::before {
+            opacity: 1;
+        }
+
         .metric-label {
             margin-bottom: 12px;
         }
 
         .metric-label-cn {
-            font-size: 14px;
+            font-size: 13px;
             font-weight: 500;
-            color: var(--xhs-gray-900);
+            color: var(--text-secondary);
             margin-bottom: 2px;
         }
 
         .metric-label-en {
-            font-size: 11px;
-            color: var(--xhs-gray-400);
+            font-size: 10px;
+            color: var(--text-dim);
+            font-family: var(--font-mono);
             text-transform: uppercase;
-            letter-spacing: 0.5px;
+            letter-spacing: 0.1em;
         }
 
-        /* 指标数值 */
+        /* MONOSPACE NUMBERS - Key Tech Feel */
         .metric-value {
             font-size: 32px;
             font-weight: 700;
-            margin-bottom: 4px;
-            font-variant-numeric: tabular-nums;  /* 数字等宽对齐 */
+            font-family: var(--font-mono);
+            letter-spacing: -0.02em;
+            margin-bottom: 6px;
         }
 
-        .metric-value.red { color: var(--xhs-red); }
-        .metric-value.green { color: var(--xhs-green); }
-        .metric-value.dark { color: var(--xhs-gray-900); }
+        .metric-value.accent {
+            color: var(--accent);
+            text-shadow: 0 0 30px var(--accent-glow);
+        }
+
+        .metric-value.success {
+            color: var(--success);
+            text-shadow: 0 0 30px var(--success-glow);
+        }
+
+        .metric-value.neutral {
+            color: var(--text-primary);
+        }
 
         .metric-subtitle {
-            font-size: 12px;
-            color: var(--xhs-gray-400);
+            font-size: 11px;
+            color: var(--text-muted);
         }
 
-        /* ========== 图表区域 ========== */
+        /* ========== CHARTS GRID ========== */
         .charts-grid {
             display: grid;
             grid-template-columns: 1fr;
@@ -222,12 +310,18 @@
             gap: 20px;
         }
 
-        /* 图表卡片 */
+        /* ========== CHART CARD ========== */
         .chart-card {
-            background: var(--xhs-white);
-            border-radius: 16px;
+            background: var(--bg-card);
+            backdrop-filter: blur(10px);
+            border-radius: 12px;
             padding: 24px;
-            border: 1px solid var(--xhs-gray-200);
+            border: 1px solid var(--border-default);
+            transition: all 0.3s ease;
+        }
+
+        .chart-card:hover {
+            border-color: var(--border-hover);
         }
 
         .chart-card.full-width {
@@ -241,26 +335,29 @@
             margin-bottom: 20px;
         }
 
-        /* 图表标题：中文+英文小字 */
         .chart-title {
-            font-size: 16px;
+            font-size: 14px;
             font-weight: 600;
-            color: var(--xhs-gray-900);
+            color: var(--text-primary);
+            letter-spacing: -0.01em;
         }
 
         .chart-subtitle {
-            font-size: 12px;
-            color: var(--xhs-gray-400);
+            font-size: 11px;
+            color: var(--text-muted);
+            font-family: var(--font-mono);
             margin-top: 4px;
+            letter-spacing: 0.02em;
         }
 
         .chart-note {
-            font-size: 12px;
-            color: var(--xhs-red);
-            background: var(--xhs-red-bg);
+            font-size: 11px;
+            font-family: var(--font-mono);
+            color: var(--accent);
+            background: var(--accent-subtle);
             padding: 6px 12px;
-            border-radius: 20px;
-            font-weight: 500;
+            border-radius: 6px;
+            border: 1px solid var(--accent-border);
         }
 
         .chart-container {
@@ -272,13 +369,7 @@
             height: 380px;
         }
 
-        /* ========== 关键词区域 ========== */
-        .keywords-section {
-            display: grid;
-            grid-template-columns: 1fr 1fr;
-            gap: 20px;
-        }
-
+        /* ========== KEYWORD TAGS (Outlined Glow Style) ========== */
         .keyword-cloud {
             display: flex;
             flex-wrap: wrap;
@@ -287,54 +378,78 @@
         }
 
         .keyword-tag {
-            padding: 6px 14px;
-            border-radius: 20px;
-            font-size: 13px;
+            padding: 6px 12px;
+            border-radius: 6px;
+            font-size: 12px;
+            font-family: var(--font-mono);
             display: flex;
             align-items: center;
-            gap: 6px;
-            transition: all 0.2s;
+            gap: 8px;
+            transition: all 0.2s ease;
+            cursor: default;
         }
 
-        .keyword-tag:hover {
-            transform: scale(1.05);
+        .keyword-tag.accent {
+            background: var(--accent-subtle);
+            color: var(--accent);
+            border: 1px solid var(--accent-border);
         }
 
-        /* 红色关键词标签 */
-        .keyword-tag.red {
-            background: var(--xhs-red-bg);
-            color: var(--xhs-red);
-            border: 1px solid rgba(255, 36, 66, 0.2);
+        .keyword-tag.accent:hover {
+            box-shadow: 0 0 15px var(--accent-glow);
+            border-color: var(--accent);
         }
 
-        /* 绿色关键词标签 */
-        .keyword-tag.green {
-            background: #ECFDF5;
-            color: var(--xhs-green);
-            border: 1px solid rgba(16, 185, 129, 0.2);
+        .keyword-tag.success {
+            background: var(--success-subtle);
+            color: var(--success);
+            border: 1px solid var(--success-border);
+        }
+
+        .keyword-tag.success:hover {
+            box-shadow: 0 0 15px var(--success-glow);
+            border-color: var(--success);
         }
 
         .keyword-count {
-            background: rgba(0,0,0,0.08);
-            padding: 2px 8px;
-            border-radius: 10px;
-            font-size: 11px;
-            font-weight: 500;
+            background: rgba(255,255,255,0.1);
+            padding: 2px 6px;
+            border-radius: 4px;
+            font-size: 10px;
+            font-weight: 600;
         }
 
-        /* ========== 排行榜 ========== */
+        .keyword-section-title {
+            font-size: 11px;
+            font-family: var(--font-mono);
+            text-transform: uppercase;
+            letter-spacing: 0.1em;
+            margin-bottom: 10px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .keyword-section-title.accent { color: var(--accent); }
+        .keyword-section-title.success { color: var(--success); }
+
+        /* ========== RANKING LIST (Terminal Style) ========== */
         .ranking-list {
             max-height: 320px;
             overflow-y: auto;
+            font-family: var(--font-mono);
         }
 
-        /* 自定义滚动条 */
         .ranking-list::-webkit-scrollbar {
             width: 4px;
         }
 
+        .ranking-list::-webkit-scrollbar-track {
+            background: transparent;
+        }
+
         .ranking-list::-webkit-scrollbar-thumb {
-            background: var(--xhs-gray-200);
+            background: var(--border-default);
             border-radius: 4px;
         }
 
@@ -342,33 +457,42 @@
             display: flex;
             align-items: center;
             padding: 12px 0;
-            border-bottom: 1px solid var(--xhs-gray-200);
+            border-bottom: 1px solid var(--border-subtle);
+            transition: all 0.2s ease;
+        }
+
+        .ranking-item:hover {
+            background: var(--bg-card-hover);
+            margin: 0 -12px;
+            padding: 12px;
+            border-radius: 6px;
         }
 
         .ranking-item:last-child {
             border-bottom: none;
         }
 
-        /* 排名数字 */
         .ranking-number {
-            width: 28px;
-            height: 28px;
-            background: var(--xhs-gray-100);
-            border-radius: 8px;
+            width: 24px;
+            height: 24px;
+            background: var(--bg-elevated);
+            border-radius: 6px;
             display: flex;
             align-items: center;
             justify-content: center;
-            font-size: 13px;
+            font-size: 11px;
             font-weight: 600;
             margin-right: 12px;
             flex-shrink: 0;
-            color: var(--xhs-gray-600);
+            color: var(--text-muted);
+            border: 1px solid var(--border-default);
         }
 
-        /* 前三名特殊样式 */
         .ranking-number.top3 {
-            background: var(--xhs-red);
-            color: white;
+            background: var(--accent-subtle);
+            color: var(--accent);
+            border-color: var(--accent-border);
+            box-shadow: 0 0 10px var(--accent-glow);
         }
 
         .ranking-content {
@@ -377,84 +501,73 @@
         }
 
         .ranking-title {
-            font-size: 14px;
+            font-size: 12px;
             font-weight: 500;
+            font-family: var(--font-sans);
             white-space: nowrap;
             overflow: hidden;
             text-overflow: ellipsis;
             margin-bottom: 4px;
-            color: var(--xhs-gray-900);
+            color: var(--text-primary);
         }
 
         .ranking-stats {
-            font-size: 12px;
-            color: var(--xhs-gray-400);
+            font-size: 10px;
+            color: var(--text-dim);
         }
 
         .ranking-value {
-            font-size: 15px;
+            font-size: 13px;
             font-weight: 600;
-            color: var(--xhs-red);
+            color: var(--accent);
             margin-left: 12px;
             flex-shrink: 0;
         }
 
-        /* ========== 切换按钮组 ========== */
+        /* ========== TAB BUTTONS ========== */
         .tab-buttons {
             display: flex;
-            gap: 8px;
+            gap: 6px;
             margin-bottom: 16px;
         }
 
         .tab-btn {
-            background: var(--xhs-gray-100);
-            border: 1px solid var(--xhs-gray-200);
-            color: var(--xhs-gray-600);
-            padding: 8px 16px;
-            border-radius: 20px;
+            background: transparent;
+            border: 1px solid var(--border-default);
+            color: var(--text-muted);
+            padding: 6px 14px;
+            border-radius: 6px;
             cursor: pointer;
-            font-size: 13px;
-            transition: all 0.2s;
+            font-size: 11px;
+            font-family: var(--font-mono);
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+            transition: all 0.2s ease;
         }
 
         .tab-btn:hover {
-            background: var(--xhs-red-bg);
-            color: var(--xhs-red);
-            border-color: var(--xhs-red);
+            border-color: var(--border-hover);
+            color: var(--text-primary);
         }
 
         .tab-btn.active {
-            background: var(--xhs-red);
-            color: white;
-            border-color: var(--xhs-red);
+            background: var(--accent-subtle);
+            border-color: var(--accent-border);
+            color: var(--accent);
         }
 
-        /* ========== 关键词分类标题 ========== */
-        .keyword-section-title {
-            font-size: 13px;
-            font-weight: 500;
-            margin-bottom: 8px;
-            display: flex;
-            align-items: center;
-            gap: 6px;
-        }
-
-        .keyword-section-title.red { color: var(--xhs-red); }
-        .keyword-section-title.green { color: var(--xhs-green); }
-
-        /* ========== 响应式布局 - iPad ========== */
+        /* ========== RESPONSIVE - iPad ========== */
         @media (max-width: 1200px) {
             .metrics-grid {
                 grid-template-columns: repeat(3, 1fr);
             }
 
-            .chart-row,
-            .keywords-section {
+            .chart-row {
                 grid-template-columns: 1fr;
             }
         }
 
-        /* ========== 响应式布局 - iPhone ========== */
+        /* ========== RESPONSIVE - iPhone ========== */
         @media (max-width: 768px) {
             body {
                 padding: 16px;
@@ -463,7 +576,7 @@
             .header {
                 flex-direction: column;
                 align-items: stretch;
-                gap: 12px;
+                gap: 16px;
             }
 
             .logo {
@@ -474,7 +587,6 @@
                 justify-content: center;
             }
 
-            /* 手机上显示2列指标卡片 */
             .metrics-grid {
                 grid-template-columns: repeat(2, 1fr);
                 gap: 12px;
@@ -488,143 +600,116 @@
                 font-size: 24px;
             }
 
-            .metric-label-cn {
-                font-size: 13px;
-            }
-
             .chart-card {
                 padding: 16px;
             }
 
             .chart-container {
-                height: 250px;
+                height: 240px;
             }
 
             .chart-container.tall {
-                height: 300px;
-            }
-
-            .chart-title {
-                font-size: 15px;
-            }
-
-            .tab-btn {
-                padding: 6px 12px;
-                font-size: 12px;
+                height: 280px;
             }
         }
 
-        /* ========== 响应式布局 - iPhone SE等小屏 ========== */
+        /* ========== RESPONSIVE - iPhone SE ========== */
         @media (max-width: 375px) {
             body {
                 padding: 12px;
             }
 
             .metric-value {
-                font-size: 22px;
+                font-size: 20px;
             }
 
             .logo-text h1 {
-                font-size: 18px;
-            }
-
-            .date-filter {
-                padding: 8px 12px;
-            }
-
-            .date-filter select {
-                padding: 6px 8px;
-                font-size: 12px;
-            }
-
-            .date-filter button {
-                padding: 6px 14px;
-                font-size: 12px;
+                font-size: 16px;
             }
         }
 
-        /* ========== iPhone安全区域适配 ========== */
+        /* ========== Safe Area ========== */
         @supports (padding-bottom: env(safe-area-inset-bottom)) {
             body {
-                padding-bottom: calc(20px + env(safe-area-inset-bottom));
+                padding-bottom: calc(24px + env(safe-area-inset-bottom));
             }
         }
     </style>
 </head>
 <body>
-    <!-- ===== 顶部标题区 ===== -->
+    <!-- ===== HEADER ===== -->
     <div class="header">
         <div class="logo">
             <div class="logo-icon">📊</div>
             <div class="logo-text">
                 <h1>数据分析看板</h1>
-                <p>Xiaohongshu Analytics Dashboard</p>
+                <p>XIAOHONGSHU ANALYTICS</p>
             </div>
         </div>
         <div class="date-filter">
-            <label>起始</label>
+            <label>FROM</label>
             <select id="startMonth"></select>
-            <label>结束</label>
+            <label>TO</label>
             <select id="endMonth"></select>
-            <button onclick="applyFilter()">筛选</button>
-            <button class="secondary" onclick="resetFilter()">重置</button>
+            <button onclick="applyFilter()">FILTER</button>
+            <button class="secondary" onclick="resetFilter()">RESET</button>
         </div>
     </div>
 
-    <!-- ===== 核心指标卡片 ===== -->
+    <!-- ===== METRICS CARDS ===== -->
     <div class="metrics-grid">
         <div class="metric-card">
             <div class="metric-label">
                 <div class="metric-label-cn">总曝光量</div>
-                <div class="metric-label-en">Total Impressions</div>
+                <div class="metric-label-en">TOTAL IMPRESSIONS</div>
             </div>
-            <div class="metric-value red" id="totalImpressions">-</div>
+            <div class="metric-value accent" id="totalImpressions">-</div>
             <div class="metric-subtitle">笔记被展示的次数</div>
         </div>
         <div class="metric-card">
             <div class="metric-label">
                 <div class="metric-label-cn">平均点击率</div>
-                <div class="metric-label-en">Average CTR</div>
+                <div class="metric-label-en">AVERAGE CTR</div>
             </div>
-            <div class="metric-value dark" id="avgCtr">-</div>
+            <div class="metric-value neutral" id="avgCtr">-</div>
             <div class="metric-subtitle">点击数 / 曝光数</div>
         </div>
         <div class="metric-card">
             <div class="metric-label">
                 <div class="metric-label-cn">总互动量</div>
-                <div class="metric-label-en">Total Interactions</div>
+                <div class="metric-label-en">INTERACTIONS</div>
             </div>
-            <div class="metric-value dark" id="totalInteractions">-</div>
-            <div class="metric-subtitle">赞+藏+评+分享</div>
+            <div class="metric-value neutral" id="totalInteractions">-</div>
+            <div class="metric-subtitle">赞 + 藏 + 评 + 分享</div>
         </div>
         <div class="metric-card">
             <div class="metric-label">
                 <div class="metric-label-cn">实用性指数</div>
-                <div class="metric-label-en">Utility Ratio</div>
+                <div class="metric-label-en">UTILITY RATIO</div>
             </div>
-            <div class="metric-value green" id="utilityRatio">-</div>
+            <div class="metric-value success" id="utilityRatio">-</div>
             <div class="metric-subtitle">收藏 / 点赞</div>
         </div>
         <div class="metric-card">
             <div class="metric-label">
                 <div class="metric-label-cn">总涨粉数</div>
-                <div class="metric-label-en">Follower Gain</div>
+                <div class="metric-label-en">FOLLOWER GAIN</div>
             </div>
-            <div class="metric-value red" id="totalFollowers">-</div>
+            <div class="metric-value accent" id="totalFollowers">-</div>
             <div class="metric-subtitle">新增关注者</div>
         </div>
     </div>
 
-    <!-- ===== 图表区域 ===== -->
+    <!-- ===== CHARTS ===== -->
     <div class="charts-grid">
-        <!-- 北极星指标图 -->
+        <!-- North Star Chart -->
         <div class="chart-card full-width">
             <div class="chart-header">
                 <div>
                     <div class="chart-title">核心指标趋势</div>
-                    <div class="chart-subtitle">North Star Metrics - 曝光量 vs 涨粉数</div>
+                    <div class="chart-subtitle">NORTH STAR · IMPRESSIONS VS FOLLOWERS</div>
                 </div>
-                <div class="chart-note" id="noteCount">共 0 篇笔记</div>
+                <div class="chart-note" id="noteCount">0 NOTES</div>
             </div>
             <div class="chart-container tall">
                 <canvas id="northStarChart"></canvas>
@@ -632,19 +717,19 @@
         </div>
 
         <div class="chart-row">
-            <!-- 涨粉趋势图 -->
+            <!-- Follower Trend -->
             <div class="chart-card">
                 <div class="chart-title">涨粉趋势</div>
-                <div class="chart-subtitle">Follower Growth Over Time</div>
+                <div class="chart-subtitle">FOLLOWER GROWTH OVER TIME</div>
                 <div class="chart-container">
                     <canvas id="followerTrendChart"></canvas>
                 </div>
             </div>
 
-            <!-- 转化率排行 -->
+            <!-- Conversion Chart -->
             <div class="chart-card">
                 <div class="chart-title">涨粉效率 Top 10</div>
-                <div class="chart-subtitle">Followers per 1K Impressions</div>
+                <div class="chart-subtitle">FOLLOWERS PER 1K IMPRESSIONS</div>
                 <div class="chart-container">
                     <canvas id="conversionChart"></canvas>
                 </div>
@@ -652,10 +737,10 @@
         </div>
 
         <div class="chart-row">
-            <!-- 笔记排行榜 -->
+            <!-- Ranking List -->
             <div class="chart-card">
                 <div class="chart-title">笔记排行榜</div>
-                <div class="chart-subtitle">Top Performing Notes</div>
+                <div class="chart-subtitle">TOP PERFORMING NOTES</div>
                 <div class="tab-buttons">
                     <button class="tab-btn active" onclick="switchRanking('impressions', this)">曝光</button>
                     <button class="tab-btn" onclick="switchRanking('interactions', this)">互动</button>
@@ -664,16 +749,20 @@
                 <div class="ranking-list" id="rankingList"></div>
             </div>
 
-            <!-- 关键词分析 -->
+            <!-- Keyword Analysis -->
             <div class="chart-card">
                 <div class="chart-title">标题关键词分析</div>
-                <div class="chart-subtitle">Keyword Analysis</div>
+                <div class="chart-subtitle">KEYWORD ANALYSIS</div>
                 <div style="margin-bottom: 20px;">
-                    <div class="keyword-section-title red">🔥 高赞笔记关键词</div>
+                    <div class="keyword-section-title accent">
+                        <span>●</span> HIGH ENGAGEMENT KEYWORDS
+                    </div>
                     <div class="keyword-cloud" id="highLikesKeywords"></div>
                 </div>
                 <div>
-                    <div class="keyword-section-title green">📈 高转化笔记关键词</div>
+                    <div class="keyword-section-title success">
+                        <span>●</span> HIGH CONVERSION KEYWORDS
+                    </div>
                     <div class="keyword-cloud" id="highFollowersKeywords"></div>
                 </div>
             </div>
@@ -681,1451 +770,34 @@
     </div>
 
     <script>
-        // ========== 数据源 ==========
-        // 这里的数据会被更新脚本自动替换
-        const rawData = {
-  "notes": [
-    {
-      "title": "AI时代，高潜力年轻人的重要品质是什么？",
-      "date": "2025-08-10",
-      "month": "2025-08",
-      "type": "图文",
-      "impressions": 10999,
-      "views": 1705,
-      "ctr": 0.154,
-      "likes": 92,
-      "comments": 14,
-      "collects": 63,
-      "followers": 8,
-      "shares": 17,
-      "avgViewTime": 11
-    },
-    {
-      "title": "分享最近学AI收获的3点高能认知‼️",
-      "date": "2025-08-13",
-      "month": "2025-08",
-      "type": "图文",
-      "impressions": 4042,
-      "views": 437,
-      "ctr": 0.108,
-      "likes": 55,
-      "comments": 8,
-      "collects": 45,
-      "followers": 2,
-      "shares": 8,
-      "avgViewTime": 15
-    },
-    {
-      "title": "油管大神教的：如何像CEO一样表达(上)🔥",
-      "date": "2025-08-15",
-      "month": "2025-08",
-      "type": "图文",
-      "impressions": 37547,
-      "views": 4882,
-      "ctr": 0.13,
-      "likes": 677,
-      "comments": 2,
-      "collects": 743,
-      "followers": 35,
-      "shares": 79,
-      "avgViewTime": 17
-    },
-    {
-      "title": "油管大神教的：如何像CEO一样表达（下）🔥",
-      "date": "2025-08-18",
-      "month": "2025-08",
-      "type": "图文",
-      "impressions": 8206,
-      "views": 857,
-      "ctr": 0.107,
-      "likes": 138,
-      "comments": 2,
-      "collects": 141,
-      "followers": 4,
-      "shares": 15,
-      "avgViewTime": 15
-    },
-    {
-      "title": "听懂纳瓦尔这段话，你的成长从此开挂🔥",
-      "date": "2025-08-21",
-      "month": "2025-08",
-      "type": "图文",
-      "impressions": 2185,
-      "views": 147,
-      "ctr": 0.066,
-      "likes": 17,
-      "comments": 4,
-      "collects": 10,
-      "followers": 1,
-      "shares": 4,
-      "avgViewTime": 9
-    },
-    {
-      "title": "突然就明白了“成熟的爱”是这样的🩵",
-      "date": "2025-08-24",
-      "month": "2025-08",
-      "type": "图文",
-      "impressions": 2445,
-      "views": 195,
-      "ctr": 0.078,
-      "likes": 14,
-      "comments": 0,
-      "collects": 4,
-      "followers": 0,
-      "shares": 2,
-      "avgViewTime": 7
-    },
-    {
-      "title": "如何提高small talk能力(打车版)",
-      "date": "2025-08-25",
-      "month": "2025-08",
-      "type": "图文",
-      "impressions": 21156,
-      "views": 3262,
-      "ctr": 0.156,
-      "likes": 272,
-      "comments": 2,
-      "collects": 153,
-      "followers": 19,
-      "shares": 14,
-      "avgViewTime": 9
-    },
-    {
-      "title": "西雅图🇺🇸Amazon Spheres 来了就是🍌厂人",
-      "date": "2025-08-31",
-      "month": "2025-08",
-      "type": "图文",
-      "impressions": 7981,
-      "views": 1235,
-      "ctr": 0.155,
-      "likes": 19,
-      "comments": 4,
-      "collects": 4,
-      "followers": 2,
-      "shares": 7,
-      "avgViewTime": 26
-    },
-    {
-      "title": "🇺🇸西雅图情侣拍照，都给我来这里好吗‼️",
-      "date": "2025-09-01",
-      "month": "2025-09",
-      "type": "图文",
-      "impressions": 5394,
-      "views": 615,
-      "ctr": 0.114,
-      "likes": 16,
-      "comments": 2,
-      "collects": 3,
-      "followers": 0,
-      "shares": 7,
-      "avgViewTime": 7
-    },
-    {
-      "title": "西雅图遇见雷尼尔🏔️(熊出没版)🐻",
-      "date": "2025-09-02",
-      "month": "2025-09",
-      "type": "图文",
-      "impressions": 27524,
-      "views": 4621,
-      "ctr": 0.169,
-      "likes": 128,
-      "comments": 20,
-      "collects": 27,
-      "followers": 4,
-      "shares": 74,
-      "avgViewTime": 7
-    },
-    {
-      "title": "为什么我的“AI精神导师”双双提到Builder🤔",
-      "date": "2025-09-03",
-      "month": "2025-09",
-      "type": "图文",
-      "impressions": 24900,
-      "views": 5623,
-      "ctr": 0.225,
-      "likes": 78,
-      "comments": 17,
-      "collects": 48,
-      "followers": 13,
-      "shares": 11,
-      "avgViewTime": 26
-    },
-    {
-      "title": "西雅图，真的无聊吗？",
-      "date": "2025-09-05",
-      "month": "2025-09",
-      "type": "图文",
-      "impressions": 11517,
-      "views": 1857,
-      "ctr": 0.157,
-      "likes": 28,
-      "comments": 11,
-      "collects": 5,
-      "followers": 1,
-      "shares": 0,
-      "avgViewTime": 9
-    },
-    {
-      "title": "西雅图瞻仰李小龙，Be Water My Friend🌊",
-      "date": "2025-09-08",
-      "month": "2025-09",
-      "type": "图文",
-      "impressions": 3939,
-      "views": 375,
-      "ctr": 0.097,
-      "likes": 30,
-      "comments": 1,
-      "collects": 4,
-      "followers": 0,
-      "shares": 1,
-      "avgViewTime": 6
-    },
-    {
-      "title": "在西雅图住进了梦中情屋🏠Airbnb民宿",
-      "date": "2025-09-10",
-      "month": "2025-09",
-      "type": "图文",
-      "impressions": 4032,
-      "views": 437,
-      "ctr": 0.108,
-      "likes": 7,
-      "comments": 4,
-      "collects": 1,
-      "followers": 0,
-      "shares": 0,
-      "avgViewTime": 34
-    },
-    {
-      "title": "Hello Seattle📸 西雅图的夏天太有感觉了",
-      "date": "2025-09-16",
-      "month": "2025-09",
-      "type": "图文",
-      "impressions": 2251,
-      "views": 165,
-      "ctr": 0.071,
-      "likes": 5,
-      "comments": 0,
-      "collects": 0,
-      "followers": 1,
-      "shares": 0,
-      "avgViewTime": 10
-    },
-    {
-      "title": "H1B10万美金入境反转，我们真的安全了吗？",
-      "date": "2025-09-21",
-      "month": "2025-09",
-      "type": "图文",
-      "impressions": 5410,
-      "views": 899,
-      "ctr": 0.165,
-      "likes": 11,
-      "comments": 5,
-      "collects": 2,
-      "followers": 0,
-      "shares": 4,
-      "avgViewTime": 13
-    },
-    {
-      "title": "Databricks Data+AI 洛杉矶站🙋🙋‍♀️",
-      "date": "2025-09-22",
-      "month": "2025-09",
-      "type": "图文",
-      "impressions": 2533,
-      "views": 304,
-      "ctr": 0.121,
-      "likes": 6,
-      "comments": 0,
-      "collects": 5,
-      "followers": 0,
-      "shares": 5,
-      "avgViewTime": 9
-    },
-    {
-      "title": "南加州🏄人们把一切交给海浪🌊",
-      "date": "2025-09-23",
-      "month": "2025-09",
-      "type": "图文",
-      "impressions": 6035,
-      "views": 511,
-      "ctr": 0.085,
-      "likes": 5,
-      "comments": 1,
-      "collects": 0,
-      "followers": 0,
-      "shares": 0,
-      "avgViewTime": 12
-    },
-    {
-      "title": "我发现焦虑时听许知远的播客真的好解压😇",
-      "date": "2025-09-29",
-      "month": "2025-09",
-      "type": "图文",
-      "impressions": 6117,
-      "views": 871,
-      "ctr": 0.143,
-      "likes": 60,
-      "comments": 1,
-      "collects": 33,
-      "followers": 2,
-      "shares": 3,
-      "avgViewTime": 7
-    },
-    {
-      "title": "入职三个月的思考：降低信噪比真的好重要",
-      "date": "2025-10-01",
-      "month": "2025-10",
-      "type": "图文",
-      "impressions": 14107,
-      "views": 2428,
-      "ctr": 0.173,
-      "likes": 244,
-      "comments": 1,
-      "collects": 267,
-      "followers": 16,
-      "shares": 24,
-      "avgViewTime": 6
-    },
-    {
-      "title": "谁懂啊！职场六边形战士原来是这样练成的",
-      "date": "2025-10-05",
-      "month": "2025-10",
-      "type": "图文",
-      "impressions": 9880,
-      "views": 1384,
-      "ctr": 0.14,
-      "likes": 89,
-      "comments": 4,
-      "collects": 94,
-      "followers": 10,
-      "shares": 25,
-      "avgViewTime": 11
-    },
-    {
-      "title": "想拥有在世界任何地方安放自己的能力🌍",
-      "date": "2025-10-06",
-      "month": "2025-10",
-      "type": "图文",
-      "impressions": 2881,
-      "views": 260,
-      "ctr": 0.089,
-      "likes": 26,
-      "comments": 1,
-      "collects": 2,
-      "followers": 1,
-      "shares": 3,
-      "avgViewTime": 39
-    },
-    {
-      "title": "围观硅谷华人产品经理离职后的3点感悟",
-      "date": "2025-10-07",
-      "month": "2025-10",
-      "type": "图文",
-      "impressions": 11983,
-      "views": 2581,
-      "ctr": 0.215,
-      "likes": 48,
-      "comments": 3,
-      "collects": 17,
-      "followers": 13,
-      "shares": 19,
-      "avgViewTime": 51
-    },
-    {
-      "title": "如何提高small talk能力（🇺🇸职场团建版）",
-      "date": "2025-10-09",
-      "month": "2025-10",
-      "type": "图文",
-      "impressions": 3902,
-      "views": 303,
-      "ctr": 0.078,
-      "likes": 11,
-      "comments": 2,
-      "collects": 13,
-      "followers": 2,
-      "shares": 1,
-      "avgViewTime": 29
-    },
-    {
-      "title": "加州落日California Vibe在这一刻具象化🥹",
-      "date": "2025-10-11",
-      "month": "2025-10",
-      "type": "图文",
-      "impressions": 5330,
-      "views": 438,
-      "ctr": 0.084,
-      "likes": 13,
-      "comments": 2,
-      "collects": 4,
-      "followers": 0,
-      "shares": 7,
-      "avgViewTime": 18
-    },
-    {
-      "title": "30+感悟：健身让我明白了一个真相",
-      "date": "2025-10-12",
-      "month": "2025-10",
-      "type": "图文",
-      "impressions": 22273,
-      "views": 5182,
-      "ctr": 0.245,
-      "likes": 205,
-      "comments": 20,
-      "collects": 98,
-      "followers": 13,
-      "shares": 12,
-      "avgViewTime": 11
-    },
-    {
-      "title": "🇺🇸北美职场让你懂人情世故的加分tips",
-      "date": "2025-10-13",
-      "month": "2025-10",
-      "type": "图文",
-      "impressions": 14942,
-      "views": 2212,
-      "ctr": 0.151,
-      "likes": 272,
-      "comments": 1,
-      "collects": 266,
-      "followers": 14,
-      "shares": 16,
-      "avgViewTime": 16
-    },
-    {
-      "title": "大数据请推给参加LA Tech Week的朋友🤩",
-      "date": "2025-10-14",
-      "month": "2025-10",
-      "type": "图文",
-      "impressions": 4495,
-      "views": 634,
-      "ctr": 0.142,
-      "likes": 41,
-      "comments": 5,
-      "collects": 20,
-      "followers": 9,
-      "shares": 6,
-      "avgViewTime": 3
-    },
-    {
-      "title": "30+感悟：如何把自己养出高能量🌟",
-      "date": "2025-10-15",
-      "month": "2025-10",
-      "type": "图文",
-      "impressions": 3511,
-      "views": 284,
-      "ctr": 0.083,
-      "likes": 22,
-      "comments": 6,
-      "collects": 19,
-      "followers": 0,
-      "shares": 4,
-      "avgViewTime": 15
-    },
-    {
-      "title": "Santa Monica 在这里可以忘记所有忧愁烦恼",
-      "date": "2025-10-19",
-      "month": "2025-10",
-      "type": "图文",
-      "impressions": 3607,
-      "views": 239,
-      "ctr": 0.066,
-      "likes": 8,
-      "comments": 0,
-      "collects": 1,
-      "followers": 0,
-      "shares": 0,
-      "avgViewTime": 26
-    },
-    {
-      "title": "长大后的万灵药：人生有的选or没得选？",
-      "date": "2025-10-19",
-      "month": "2025-10",
-      "type": "图文",
-      "impressions": 2371,
-      "views": 170,
-      "ctr": 0.07,
-      "likes": 10,
-      "comments": 3,
-      "collects": 3,
-      "followers": 0,
-      "shares": 1,
-      "avgViewTime": 9
-    },
-    {
-      "title": "围观科技大佬用AI提高工作效率的一些启发",
-      "date": "2025-10-20",
-      "month": "2025-10",
-      "type": "图文",
-      "impressions": 3056,
-      "views": 208,
-      "ctr": 0.066,
-      "likes": 17,
-      "comments": 0,
-      "collects": 20,
-      "followers": 1,
-      "shares": 6,
-      "avgViewTime": 29
-    },
-    {
-      "title": "我的天真有用啊🥹",
-      "date": "2025-10-21",
-      "month": "2025-10",
-      "type": "图文",
-      "impressions": 2348,
-      "views": 269,
-      "ctr": 0.112,
-      "likes": 5,
-      "comments": 30,
-      "collects": 0,
-      "followers": 0,
-      "shares": 1,
-      "avgViewTime": 9
-    },
-    {
-      "title": "洛杉矶韩签🇰🇷五年多次丝滑get✅",
-      "date": "2025-10-23",
-      "month": "2025-10",
-      "type": "图文",
-      "impressions": 526,
-      "views": 39,
-      "ctr": 0.076,
-      "likes": 0,
-      "comments": 0,
-      "collects": 2,
-      "followers": 0,
-      "shares": 0,
-      "avgViewTime": 20
-    },
-    {
-      "title": "亲身经历lay off从北美职场博主到离职博主",
-      "date": "2025-10-26",
-      "month": "2025-10",
-      "type": "图文",
-      "impressions": 28167,
-      "views": 5647,
-      "ctr": 0.2,
-      "likes": 76,
-      "comments": 59,
-      "collects": 9,
-      "followers": 6,
-      "shares": 10,
-      "avgViewTime": 19
-    },
-    {
-      "title": "北美找工记录|被layoff后48小时我在做什么",
-      "date": "2025-10-29",
-      "month": "2025-10",
-      "type": "图文",
-      "impressions": 21548,
-      "views": 4265,
-      "ctr": 0.198,
-      "likes": 89,
-      "comments": 25,
-      "collects": 33,
-      "followers": 4,
-      "shares": 7,
-      "avgViewTime": 14
-    },
-    {
-      "title": "北美找工周记｜Treat yourself a New Job🎃",
-      "date": "2025-11-01",
-      "month": "2025-11",
-      "type": "图文",
-      "impressions": 3497,
-      "views": 510,
-      "ctr": 0.146,
-      "likes": 25,
-      "comments": 3,
-      "collects": 9,
-      "followers": 1,
-      "shares": 0,
-      "avgViewTime": 18
-    },
-    {
-      "title": "金句频出的一期直播对谈(AI学习必看)",
-      "date": "2025-11-03",
-      "month": "2025-11",
-      "type": "图文",
-      "impressions": 3903,
-      "views": 442,
-      "ctr": 0.11,
-      "likes": 31,
-      "comments": 3,
-      "collects": 11,
-      "followers": 0,
-      "shares": 4,
-      "avgViewTime": 67
-    },
-    {
-      "title": "被裁后，我靠这3个习惯，训练反脆弱🌊",
-      "date": "2025-11-05",
-      "month": "2025-11",
-      "type": "图文",
-      "impressions": 2138,
-      "views": 221,
-      "ctr": 0.102,
-      "likes": 15,
-      "comments": 7,
-      "collects": 4,
-      "followers": 2,
-      "shares": 1,
-      "avgViewTime": 18
-    },
-    {
-      "title": "果然薅羊毛能提高学习动力🤭",
-      "date": "2025-11-06",
-      "month": "2025-11",
-      "type": "图文",
-      "impressions": 3525,
-      "views": 541,
-      "ctr": 0.154,
-      "likes": 42,
-      "comments": 1,
-      "collects": 30,
-      "followers": 0,
-      "shares": 6,
-      "avgViewTime": 6
-    },
-    {
-      "title": "北美找工周记｜到那个时候，我又可以出发了🌊",
-      "date": "2025-11-08",
-      "month": "2025-11",
-      "type": "图文",
-      "impressions": 1755,
-      "views": 227,
-      "ctr": 0.129,
-      "likes": 8,
-      "comments": 8,
-      "collects": 0,
-      "followers": 1,
-      "shares": 1,
-      "avgViewTime": 13
-    },
-    {
-      "title": "详细分享如何用AI学习油管高质量英文播客",
-      "date": "2025-11-09",
-      "month": "2025-11",
-      "type": "图文",
-      "impressions": 5002,
-      "views": 396,
-      "ctr": 0.078,
-      "likes": 36,
-      "comments": 8,
-      "collects": 29,
-      "followers": 2,
-      "shares": 6,
-      "avgViewTime": 16
-    },
-    {
-      "title": "2万人围观的Google AI agent课程直播😮",
-      "date": "2025-11-11",
-      "month": "2025-11",
-      "type": "图文",
-      "impressions": 5377,
-      "views": 678,
-      "ctr": 0.126,
-      "likes": 29,
-      "comments": 1,
-      "collects": 43,
-      "followers": 5,
-      "shares": 12,
-      "avgViewTime": 16
-    },
-    {
-      "title": "谷歌AI Agent Day 2课程学习打卡📝",
-      "date": "2025-11-12",
-      "month": "2025-11",
-      "type": "图文",
-      "impressions": 2416,
-      "views": 208,
-      "ctr": 0.083,
-      "likes": 19,
-      "comments": 7,
-      "collects": 4,
-      "followers": 1,
-      "shares": 2,
-      "avgViewTime": 5
-    },
-    {
-      "title": "谷歌AI Agent Day 3课程学习打卡📒",
-      "date": "2025-11-13",
-      "month": "2025-11",
-      "type": "图文",
-      "impressions": 3341,
-      "views": 324,
-      "ctr": 0.096,
-      "likes": 12,
-      "comments": 3,
-      "collects": 8,
-      "followers": 5,
-      "shares": 0,
-      "avgViewTime": 3
-    },
-    {
-      "title": "谷歌AI Agent Day 4课程学习打卡📝",
-      "date": "2025-11-14",
-      "month": "2025-11",
-      "type": "图文",
-      "impressions": 2259,
-      "views": 157,
-      "ctr": 0.068,
-      "likes": 8,
-      "comments": 0,
-      "collects": 9,
-      "followers": 0,
-      "shares": 1,
-      "avgViewTime": 3
-    },
-    {
-      "title": "谷歌AI Agent Day 5课程学习打卡(完结篇)",
-      "date": "2025-11-15",
-      "month": "2025-11",
-      "type": "图文",
-      "impressions": 4452,
-      "views": 570,
-      "ctr": 0.125,
-      "likes": 26,
-      "comments": 6,
-      "collects": 22,
-      "followers": 2,
-      "shares": 5,
-      "avgViewTime": 16
-    },
-    {
-      "title": "站着看完2小时硅谷顶级产品经理访谈，一个字",
-      "date": "2025-11-16",
-      "month": "2025-11",
-      "type": "图文",
-      "impressions": 3411,
-      "views": 280,
-      "ctr": 0.083,
-      "likes": 23,
-      "comments": 0,
-      "collects": 16,
-      "followers": 1,
-      "shares": 5,
-      "avgViewTime": 49
-    },
-    {
-      "title": "硅谷顶级产品经理的职场成长心法👀",
-      "date": "2025-11-18",
-      "month": "2025-11",
-      "type": "图文",
-      "impressions": 1944,
-      "views": 139,
-      "ctr": 0.07,
-      "likes": 6,
-      "comments": 2,
-      "collects": 5,
-      "followers": 1,
-      "shares": 3,
-      "avgViewTime": 8
-    },
-    {
-      "title": "跟AI聊了30分钟，拿下今年黑五最佳Deal🥳",
-      "date": "2025-11-29",
-      "month": "2025-11",
-      "type": "图文",
-      "impressions": 4464,
-      "views": 875,
-      "ctr": 0.194,
-      "likes": 11,
-      "comments": 5,
-      "collects": 4,
-      "followers": 2,
-      "shares": 4,
-      "avgViewTime": 13
-    },
-    {
-      "title": "如何让GPT老师主动推荐你的产品🔍",
-      "date": "2025-12-01",
-      "month": "2025-12",
-      "type": "图文",
-      "impressions": 535,
-      "views": 28,
-      "ctr": 0.054,
-      "likes": 2,
-      "comments": 0,
-      "collects": 4,
-      "followers": 0,
-      "shares": 0,
-      "avgViewTime": 4
-    },
-    {
-      "title": "我仿佛无意中闯入了一张明信片(加州版)",
-      "date": "2025-12-02",
-      "month": "2025-12",
-      "type": "图文",
-      "impressions": 14001,
-      "views": 1991,
-      "ctr": 0.143,
-      "likes": 103,
-      "comments": 13,
-      "collects": 25,
-      "followers": 2,
-      "shares": 20,
-      "avgViewTime": 7
-    },
-    {
-      "title": "J人分享：如何用AI工具做播客知识库📒",
-      "date": "2025-12-08",
-      "month": "2025-12",
-      "type": "视频",
-      "impressions": 4899,
-      "views": 1486,
-      "ctr": 0.071,
-      "likes": 61,
-      "comments": 3,
-      "collects": 75,
-      "followers": 19,
-      "shares": 10,
-      "avgViewTime": 21
-    },
-    {
-      "title": "强烈推荐大家Notebook LM用起来‼️",
-      "date": "2025-12-13",
-      "month": "2025-12",
-      "type": "视频",
-      "impressions": 2206,
-      "views": 360,
-      "ctr": 0.066,
-      "likes": 17,
-      "comments": 6,
-      "collects": 10,
-      "followers": 1,
-      "shares": 2,
-      "avgViewTime": 12
-    },
-    {
-      "title": "30岁重新理解学习这件事",
-      "date": "2025-12-14",
-      "month": "2025-12",
-      "type": "图文",
-      "impressions": 2695,
-      "views": 331,
-      "ctr": 0.124,
-      "likes": 27,
-      "comments": 3,
-      "collects": 15,
-      "followers": 0,
-      "shares": 0,
-      "avgViewTime": 11
-    },
-    {
-      "title": "听硅谷AI Startup创始人聊产品的Aha Moment",
-      "date": "2025-12-15",
-      "month": "2025-12",
-      "type": "图文",
-      "impressions": 4632,
-      "views": 600,
-      "ctr": 0.129,
-      "likes": 31,
-      "comments": 1,
-      "collects": 18,
-      "followers": 4,
-      "shares": 2,
-      "avgViewTime": 4
-    },
-    {
-      "title": "🇺🇸找工很糟心，不如看看这本让你哈哈大笑",
-      "date": "2025-12-25",
-      "month": "2025-12",
-      "type": "图文",
-      "impressions": 2059,
-      "views": 183,
-      "ctr": 0.089,
-      "likes": 16,
-      "comments": 3,
-      "collects": 4,
-      "followers": 0,
-      "shares": 1,
-      "avgViewTime": 46
-    },
-    {
-      "title": "Notion创始人的年度思考，1个细节我停了很久",
-      "date": "2025-12-26",
-      "month": "2025-12",
-      "type": "图文",
-      "impressions": 10172,
-      "views": 1660,
-      "ctr": 0.164,
-      "likes": 106,
-      "comments": 1,
-      "collects": 98,
-      "followers": 3,
-      "shares": 9,
-      "avgViewTime": 10
-    },
-    {
-      "title": "J人年终总结🎧篇：2025我的Top1播客出现了",
-      "date": "2025-12-28",
-      "month": "2025-12",
-      "type": "图文",
-      "impressions": 2812,
-      "views": 225,
-      "ctr": 0.08,
-      "likes": 16,
-      "comments": 7,
-      "collects": 7,
-      "followers": 0,
-      "shares": 2,
-      "avgViewTime": 21
-    },
-    {
-      "title": "进入2026年前，请听这一期高质量AI播客🚀",
-      "date": "2025-12-29",
-      "month": "2025-12",
-      "type": "图文",
-      "impressions": 2723,
-      "views": 232,
-      "ctr": 0.085,
-      "likes": 22,
-      "comments": 3,
-      "collects": 20,
-      "followers": 0,
-      "shares": 4,
-      "avgViewTime": 5
-    },
-    {
-      "title": "没想到2025年最触及我的书居然是这本🥹",
-      "date": "2025-12-30",
-      "month": "2025-12",
-      "type": "图文",
-      "impressions": 14964,
-      "views": 1854,
-      "ctr": 0.125,
-      "likes": 145,
-      "comments": 8,
-      "collects": 123,
-      "followers": 6,
-      "shares": 12,
-      "avgViewTime": 19
-    },
-    {
-      "title": "活人感「Be Real」将成为2026年AI领域的热词",
-      "date": "2026-01-07",
-      "month": "2026-01",
-      "type": "图文",
-      "impressions": 2252,
-      "views": 169,
-      "ctr": 0.073,
-      "likes": 20,
-      "comments": 5,
-      "collects": 7,
-      "followers": 0,
-      "shares": 3,
-      "avgViewTime": 11
-    },
-    {
-      "title": "我发现很多人学AI都有一个误区",
-      "date": "2026-01-09",
-      "month": "2026-01",
-      "type": "图文",
-      "impressions": 1793,
-      "views": 207,
-      "ctr": 0.115,
-      "likes": 21,
-      "comments": 0,
-      "collects": 14,
-      "followers": 1,
-      "shares": 7,
-      "avgViewTime": 15
-    },
-    {
-      "title": "我真的按头安利‼️原来阅读记录app这么好玩",
-      "date": "2026-01-10",
-      "month": "2026-01",
-      "type": "图文",
-      "impressions": 21067,
-      "views": 3536,
-      "ctr": 0.171,
-      "likes": 200,
-      "comments": 16,
-      "collects": 109,
-      "followers": 3,
-      "shares": 13,
-      "avgViewTime": 21
-    },
-    {
-      "title": "在加州想念纽约",
-      "date": "2026-01-11",
-      "month": "2026-01",
-      "type": "图文",
-      "impressions": 2255,
-      "views": 267,
-      "ctr": 0.12,
-      "likes": 24,
-      "comments": 11,
-      "collects": 6,
-      "followers": 1,
-      "shares": 3,
-      "avgViewTime": 13
-    },
-    {
-      "title": "真心建议所有女生都读一下这本书‼️通透💡",
-      "date": "2026-01-12",
-      "month": "2026-01",
-      "type": "图文",
-      "impressions": 2890,
-      "views": 285,
-      "ctr": 0.096,
-      "likes": 21,
-      "comments": 3,
-      "collects": 22,
-      "followers": 1,
-      "shares": 1,
-      "avgViewTime": 16
-    },
-    {
-      "title": "🇺🇸给正在找工的朋友们一点方向与信心🧭",
-      "date": "2026-01-14",
-      "month": "2026-01",
-      "type": "图文",
-      "impressions": 2767,
-      "views": 423,
-      "ctr": 0.151,
-      "likes": 23,
-      "comments": 1,
-      "collects": 9,
-      "followers": 0,
-      "shares": 1,
-      "avgViewTime": 25
-    },
-    {
-      "title": "不要去主动摄入与你无关的信息",
-      "date": "2026-01-16",
-      "month": "2026-01",
-      "type": "图文",
-      "impressions": 5436,
-      "views": 946,
-      "ctr": 0.177,
-      "likes": 112,
-      "comments": 5,
-      "collects": 65,
-      "followers": 4,
-      "shares": 5,
-      "avgViewTime": 21
-    },
-    {
-      "title": "左滑带你看约书亚树的星空🌌",
-      "date": "2026-01-18",
-      "month": "2026-01",
-      "type": "图文",
-      "impressions": 3915,
-      "views": 555,
-      "ctr": 0.142,
-      "likes": 19,
-      "comments": 5,
-      "collects": 5,
-      "followers": 0,
-      "shares": 9,
-      "avgViewTime": 10
-    },
-    {
-      "title": "在加州Joshua Tree 把自己扔进🌵",
-      "date": "2026-01-19",
-      "month": "2026-01",
-      "type": "图文",
-      "impressions": 2999,
-      "views": 422,
-      "ctr": 0.139,
-      "likes": 13,
-      "comments": 3,
-      "collects": 4,
-      "followers": 1,
-      "shares": 1,
-      "avgViewTime": 8
-    },
-    {
-      "title": "如何在AI时代做出优秀的内容？",
-      "date": "2026-01-20",
-      "month": "2026-01",
-      "type": "图文",
-      "impressions": 1383,
-      "views": 97,
-      "ctr": 0.07,
-      "likes": 10,
-      "comments": 0,
-      "collects": 6,
-      "followers": 1,
-      "shares": 0,
-      "avgViewTime": 5
-    },
-    {
-      "title": "这一波操作 Claude上大分",
-      "date": "2026-01-25",
-      "month": "2026-01",
-      "type": "图文",
-      "impressions": 5150,
-      "views": 1014,
-      "ctr": 0.197,
-      "likes": 26,
-      "comments": 5,
-      "collects": 23,
-      "followers": 2,
-      "shares": 12,
-      "avgViewTime": 17
-    },
-    {
-      "title": "一件平常小事提醒我关于当下转念💐",
-      "date": "2026-01-28",
-      "month": "2026-01",
-      "type": "图文",
-      "impressions": 3191,
-      "views": 571,
-      "ctr": 0.182,
-      "likes": 42,
-      "comments": 13,
-      "collects": 9,
-      "followers": 0,
-      "shares": 3,
-      "avgViewTime": 17
-    },
-    {
-      "title": "原来Dream Job真的是自己创造出来的",
-      "date": "2026-01-30",
-      "month": "2026-01",
-      "type": "图文",
-      "impressions": 5342,
-      "views": 496,
-      "ctr": 0.092,
-      "likes": 59,
-      "comments": 3,
-      "collects": 73,
-      "followers": 0,
-      "shares": 7,
-      "avgViewTime": 31
-    },
-    {
-      "title": "听完这期播客，我决定停止那些无效的迂回",
-      "date": "2026-02-02",
-      "month": "2026-02",
-      "type": "图文",
-      "impressions": 357,
-      "views": 47,
-      "ctr": 0.134,
-      "likes": 5,
-      "comments": 0,
-      "collects": 4,
-      "followers": 0,
-      "shares": 1,
-      "avgViewTime": 16
-    },
-    {
-      "title": "学AI不要中计！不要中计！不要中计！",
-      "date": "2026-02-03",
-      "month": "2026-02",
-      "type": "图文",
-      "impressions": 2209,
-      "views": 308,
-      "ctr": 0.135,
-      "likes": 15,
-      "comments": 3,
-      "collects": 13,
-      "followers": 0,
-      "shares": 1,
-      "avgViewTime": 15
-    },
-    {
-      "title": "Claude Code写的学习笔记📒 强得令人发指😮",
-      "date": "2026-02-04",
-      "month": "2026-02",
-      "type": "图文",
-      "impressions": 4608,
-      "views": 2352,
-      "ctr": 0.217,
-      "likes": 33,
-      "comments": 3,
-      "collects": 20,
-      "followers": 0,
-      "shares": 3,
-      "avgViewTime": 25
-    }
-  ],
-  "months": [
-    "2025-08",
-    "2025-09",
-    "2025-10",
-    "2025-11",
-    "2025-12",
-    "2026-01",
-    "2026-02"
-  ],
-  "highLikesKeywords": [
-    [
-      "如何",
-      4
-    ],
-    [
-      "真的",
-      4
-    ],
-    [
-      "北美",
-      3
-    ],
-    [
-      "职场",
-      3
-    ],
-    [
-      "原来",
-      3
-    ],
-    [
-      "油管大神教的",
-      2
-    ],
-    [
-      "如何像ceo一样表达",
-      2
-    ],
-    [
-      "打车版",
-      2
-    ],
-    [
-      "感悟",
-      2
-    ],
-    [
-      "加州版",
-      2
-    ],
-    [
-      "谁懂啊",
-      2
-    ],
-    [
-      "油管",
-      2
-    ],
-    [
-      "管大",
-      2
-    ],
-    [
-      "大神",
-      2
-    ],
-    [
-      "神教",
-      2
-    ],
-    [
-      "教的",
-      2
-    ],
-    [
-      "的如",
-      2
-    ],
-    [
-      "何像",
-      2
-    ],
-    [
-      "像一",
-      2
-    ],
-    [
-      "一样",
-      2
-    ],
-    [
-      "样表",
-      2
-    ],
-    [
-      "表达",
-      2
-    ],
-    [
-      "美职",
-      2
-    ],
-    [
-      "思考",
-      2
-    ],
-    [
-      "的好",
-      2
-    ],
-    [
-      "重要",
-      2
-    ],
-    [
-      "了一",
-      2
-    ],
-    [
-      "记录",
-      2
-    ],
-    [
-      "我的",
-      2
-    ],
-    [
-      "是这",
-      2
-    ]
-  ],
-  "highFollowersKeywords": [
-    [
-      "如何",
-      4
-    ],
-    [
-      "感悟",
-      3
-    ],
-    [
-      "北美",
-      3
-    ],
-    [
-      "职场",
-      3
-    ],
-    [
-      "油管大神教的",
-      2
-    ],
-    [
-      "如何像ceo一样表达",
-      2
-    ],
-    [
-      "打车版",
-      2
-    ],
-    [
-      "谁懂啊",
-      2
-    ],
-    [
-      "油管",
-      2
-    ],
-    [
-      "管大",
-      2
-    ],
-    [
-      "大神",
-      2
-    ],
-    [
-      "神教",
-      2
-    ],
-    [
-      "教的",
-      2
-    ],
-    [
-      "的如",
-      2
-    ],
-    [
-      "何像",
-      2
-    ],
-    [
-      "像一",
-      2
-    ],
-    [
-      "一样",
-      2
-    ],
-    [
-      "样表",
-      2
-    ],
-    [
-      "表达",
-      2
-    ],
-    [
-      "重要",
-      2
-    ],
-    [
-      "美职",
-      2
-    ],
-    [
-      "我的",
-      2
-    ],
-    [
-      "围观",
-      2
-    ],
-    [
-      "硅谷",
-      2
-    ],
-    [
-      "产品",
-      2
-    ],
-    [
-      "离职",
-      2
-    ],
-    [
-      "是这",
-      2
-    ],
-    [
-      "博主",
-      2
-    ],
-    [
-      "课程",
-      2
-    ],
-    [
-      "油管大",
-      2
-    ]
-  ]
-};
+        // ========== DATA SOURCE ==========
+        const rawData = {"notes":[{"title":"AI时代，高潜力年轻人的重要品质是什么？","date":"2025-08-10","month":"2025-08","type":"图文","impressions":10999,"views":1705,"ctr":0.154,"likes":92,"comments":14,"collects":63,"followers":8,"shares":17,"avgViewTime":11},{"title":"分享最近学AI收获的3点高能认知‼️","date":"2025-08-13","month":"2025-08","type":"图文","impressions":4042,"views":437,"ctr":0.108,"likes":55,"comments":8,"collects":45,"followers":2,"shares":8,"avgViewTime":15},{"title":"油管大神教的：如何像CEO一样表达(上)🔥","date":"2025-08-15","month":"2025-08","type":"图文","impressions":37547,"views":4882,"ctr":0.13,"likes":677,"comments":2,"collects":743,"followers":35,"shares":79,"avgViewTime":17},{"title":"油管大神教的：如何像CEO一样表达（下）🔥","date":"2025-08-18","month":"2025-08","type":"图文","impressions":8206,"views":857,"ctr":0.107,"likes":138,"comments":2,"collects":141,"followers":4,"shares":15,"avgViewTime":15},{"title":"听懂纳瓦尔这段话，你的成长从此开挂🔥","date":"2025-08-21","month":"2025-08","type":"图文","impressions":2185,"views":147,"ctr":0.066,"likes":17,"comments":4,"collects":10,"followers":1,"shares":4,"avgViewTime":9},{"title":"突然就明白了"成熟的爱"是这样的🩵","date":"2025-08-24","month":"2025-08","type":"图文","impressions":2445,"views":195,"ctr":0.078,"likes":14,"comments":0,"collects":4,"followers":0,"shares":2,"avgViewTime":7},{"title":"如何提高small talk能力(打车版)","date":"2025-08-25","month":"2025-08","type":"图文","impressions":21156,"views":3262,"ctr":0.156,"likes":272,"comments":2,"collects":153,"followers":19,"shares":14,"avgViewTime":9},{"title":"西雅图🇺🇸Amazon Spheres 来了就是🍌厂人","date":"2025-08-31","month":"2025-08","type":"图文","impressions":7981,"views":1235,"ctr":0.155,"likes":19,"comments":4,"collects":4,"followers":2,"shares":7,"avgViewTime":26},{"title":"🇺🇸西雅图情侣拍照，都给我来这里好吗‼️","date":"2025-09-01","month":"2025-09","type":"图文","impressions":5394,"views":615,"ctr":0.114,"likes":16,"comments":2,"collects":3,"followers":0,"shares":7,"avgViewTime":7},{"title":"西雅图遇见雷尼尔🏔️(熊出没版)🐻","date":"2025-09-02","month":"2025-09","type":"图文","impressions":27524,"views":4621,"ctr":0.169,"likes":128,"comments":20,"collects":27,"followers":4,"shares":74,"avgViewTime":7},{"title":"为什么我的"AI精神导师"双双提到Builder🤔","date":"2025-09-03","month":"2025-09","type":"图文","impressions":24900,"views":5623,"ctr":0.225,"likes":78,"comments":17,"collects":48,"followers":13,"shares":11,"avgViewTime":26},{"title":"西雅图，真的无聊吗？","date":"2025-09-05","month":"2025-09","type":"图文","impressions":11517,"views":1857,"ctr":0.157,"likes":28,"comments":11,"collects":5,"followers":1,"shares":0,"avgViewTime":9},{"title":"西雅图瞻仰李小龙，Be Water My Friend🌊","date":"2025-09-08","month":"2025-09","type":"图文","impressions":3939,"views":375,"ctr":0.097,"likes":30,"comments":1,"collects":4,"followers":0,"shares":1,"avgViewTime":6},{"title":"在西雅图住进了梦中情屋🏠Airbnb民宿","date":"2025-09-10","month":"2025-09","type":"图文","impressions":4032,"views":437,"ctr":0.108,"likes":7,"comments":4,"collects":1,"followers":0,"shares":0,"avgViewTime":34},{"title":"Hello Seattle📸 西雅图的夏天太有感觉了","date":"2025-09-16","month":"2025-09","type":"图文","impressions":2251,"views":165,"ctr":0.071,"likes":5,"comments":0,"collects":0,"followers":1,"shares":0,"avgViewTime":10},{"title":"H1B10万美金入境反转，我们真的安全了吗？","date":"2025-09-21","month":"2025-09","type":"图文","impressions":5410,"views":899,"ctr":0.165,"likes":11,"comments":5,"collects":2,"followers":0,"shares":4,"avgViewTime":13},{"title":"Databricks Data+AI 洛杉矶站🙋🙋‍♀️","date":"2025-09-22","month":"2025-09","type":"图文","impressions":2533,"views":304,"ctr":0.121,"likes":6,"comments":0,"collects":5,"followers":0,"shares":5,"avgViewTime":9},{"title":"南加州🏄人们把一切交给海浪🌊","date":"2025-09-23","month":"2025-09","type":"图文","impressions":6035,"views":511,"ctr":0.085,"likes":5,"comments":1,"collects":0,"followers":0,"shares":0,"avgViewTime":12},{"title":"我发现焦虑时听许知远的播客真的好解压😇","date":"2025-09-29","month":"2025-09","type":"图文","impressions":6117,"views":871,"ctr":0.143,"likes":60,"comments":1,"collects":33,"followers":2,"shares":3,"avgViewTime":7},{"title":"入职三个月的思考：降低信噪比真的好重要","date":"2025-10-01","month":"2025-10","type":"图文","impressions":14107,"views":2428,"ctr":0.173,"likes":244,"comments":1,"collects":267,"followers":16,"shares":24,"avgViewTime":6},{"title":"谁懂啊！职场六边形战士原来是这样练成的","date":"2025-10-05","month":"2025-10","type":"图文","impressions":9880,"views":1384,"ctr":0.14,"likes":89,"comments":4,"collects":94,"followers":10,"shares":25,"avgViewTime":11},{"title":"想拥有在世界任何地方安放自己的能力🌍","date":"2025-10-06","month":"2025-10","type":"图文","impressions":2881,"views":260,"ctr":0.089,"likes":26,"comments":1,"collects":2,"followers":1,"shares":3,"avgViewTime":39},{"title":"围观硅谷华人产品经理离职后的3点感悟","date":"2025-10-07","month":"2025-10","type":"图文","impressions":11983,"views":2581,"ctr":0.215,"likes":48,"comments":3,"collects":17,"followers":13,"shares":19,"avgViewTime":51},{"title":"如何提高small talk能力（🇺🇸职场团建版）","date":"2025-10-09","month":"2025-10","type":"图文","impressions":3902,"views":303,"ctr":0.078,"likes":11,"comments":2,"collects":13,"followers":2,"shares":1,"avgViewTime":29},{"title":"加州落日California Vibe在这一刻具象化🥹","date":"2025-10-11","month":"2025-10","type":"图文","impressions":5330,"views":438,"ctr":0.084,"likes":13,"comments":2,"collects":4,"followers":0,"shares":7,"avgViewTime":18},{"title":"30+感悟：健身让我明白了一个真相","date":"2025-10-12","month":"2025-10","type":"图文","impressions":22273,"views":5182,"ctr":0.245,"likes":205,"comments":20,"collects":98,"followers":13,"shares":12,"avgViewTime":11},{"title":"🇺🇸北美职场让你懂人情世故的加分tips","date":"2025-10-13","month":"2025-10","type":"图文","impressions":14942,"views":2212,"ctr":0.151,"likes":272,"comments":1,"collects":266,"followers":14,"shares":16,"avgViewTime":16},{"title":"大数据请推给参加LA Tech Week的朋友🤩","date":"2025-10-14","month":"2025-10","type":"图文","impressions":4495,"views":634,"ctr":0.142,"likes":41,"comments":5,"collects":20,"followers":9,"shares":6,"avgViewTime":3},{"title":"30+感悟：如何把自己养出高能量🌟","date":"2025-10-15","month":"2025-10","type":"图文","impressions":3511,"views":284,"ctr":0.083,"likes":22,"comments":6,"collects":19,"followers":0,"shares":4,"avgViewTime":15},{"title":"Santa Monica 在这里可以忘记所有忧愁烦恼","date":"2025-10-19","month":"2025-10","type":"图文","impressions":3607,"views":239,"ctr":0.066,"likes":8,"comments":0,"collects":1,"followers":0,"shares":0,"avgViewTime":26},{"title":"长大后的万灵药：人生有的选or没得选？","date":"2025-10-19","month":"2025-10","type":"图文","impressions":2371,"views":170,"ctr":0.07,"likes":10,"comments":3,"collects":3,"followers":0,"shares":1,"avgViewTime":9},{"title":"围观科技大佬用AI提高工作效率的一些启发","date":"2025-10-20","month":"2025-10","type":"图文","impressions":3056,"views":208,"ctr":0.066,"likes":17,"comments":0,"collects":20,"followers":1,"shares":6,"avgViewTime":29},{"title":"我的天真有用啊🥹","date":"2025-10-21","month":"2025-10","type":"图文","impressions":2348,"views":269,"ctr":0.112,"likes":5,"comments":30,"collects":0,"followers":0,"shares":1,"avgViewTime":9},{"title":"洛杉矶韩签🇰🇷五年多次丝滑get✅","date":"2025-10-23","month":"2025-10","type":"图文","impressions":526,"views":39,"ctr":0.076,"likes":0,"comments":0,"collects":2,"followers":0,"shares":0,"avgViewTime":20},{"title":"亲身经历lay off从北美职场博主到离职博主","date":"2025-10-26","month":"2025-10","type":"图文","impressions":28167,"views":5647,"ctr":0.2,"likes":76,"comments":59,"collects":9,"followers":6,"shares":10,"avgViewTime":19},{"title":"北美找工记录|被layoff后48小时我在做什么","date":"2025-10-29","month":"2025-10","type":"图文","impressions":21548,"views":4265,"ctr":0.198,"likes":89,"comments":25,"collects":33,"followers":4,"shares":7,"avgViewTime":14},{"title":"北美找工周记｜Treat yourself a New Job🎃","date":"2025-11-01","month":"2025-11","type":"图文","impressions":3497,"views":510,"ctr":0.146,"likes":25,"comments":3,"collects":9,"followers":1,"shares":0,"avgViewTime":18},{"title":"金句频出的一期直播对谈(AI学习必看)","date":"2025-11-03","month":"2025-11","type":"图文","impressions":3903,"views":442,"ctr":0.11,"likes":31,"comments":3,"collects":11,"followers":0,"shares":4,"avgViewTime":67},{"title":"被裁后，我靠这3个习惯，训练反脆弱🌊","date":"2025-11-05","month":"2025-11","type":"图文","impressions":2138,"views":221,"ctr":0.102,"likes":15,"comments":7,"collects":4,"followers":2,"shares":1,"avgViewTime":18},{"title":"果然薅羊毛能提高学习动力🤭","date":"2025-11-06","month":"2025-11","type":"图文","impressions":3525,"views":541,"ctr":0.154,"likes":42,"comments":1,"collects":30,"followers":0,"shares":6,"avgViewTime":6},{"title":"北美找工周记｜到那个时候，我又可以出发了🌊","date":"2025-11-08","month":"2025-11","type":"图文","impressions":1755,"views":227,"ctr":0.129,"likes":8,"comments":8,"collects":0,"followers":1,"shares":1,"avgViewTime":13},{"title":"详细分享如何用AI学习油管高质量英文播客","date":"2025-11-09","month":"2025-11","type":"图文","impressions":5002,"views":396,"ctr":0.078,"likes":36,"comments":8,"collects":29,"followers":2,"shares":6,"avgViewTime":16},{"title":"2万人围观的Google AI agent课程直播😮","date":"2025-11-11","month":"2025-11","type":"图文","impressions":5377,"views":678,"ctr":0.126,"likes":29,"comments":1,"collects":43,"followers":5,"shares":12,"avgViewTime":16},{"title":"谷歌AI Agent Day 2课程学习打卡📝","date":"2025-11-12","month":"2025-11","type":"图文","impressions":2416,"views":208,"ctr":0.083,"likes":19,"comments":7,"collects":4,"followers":1,"shares":2,"avgViewTime":5},{"title":"谷歌AI Agent Day 3课程学习打卡📒","date":"2025-11-13","month":"2025-11","type":"图文","impressions":3341,"views":324,"ctr":0.096,"likes":12,"comments":3,"collects":8,"followers":5,"shares":0,"avgViewTime":3},{"title":"谷歌AI Agent Day 4课程学习打卡📝","date":"2025-11-14","month":"2025-11","type":"图文","impressions":2259,"views":157,"ctr":0.068,"likes":8,"comments":0,"collects":9,"followers":0,"shares":1,"avgViewTime":3},{"title":"谷歌AI Agent Day 5课程学习打卡(完结篇)","date":"2025-11-15","month":"2025-11","type":"图文","impressions":4452,"views":570,"ctr":0.125,"likes":26,"comments":6,"collects":22,"followers":2,"shares":5,"avgViewTime":16},{"title":"站着看完2小时硅谷顶级产品经理访谈，一个字","date":"2025-11-16","month":"2025-11","type":"图文","impressions":3411,"views":280,"ctr":0.083,"likes":23,"comments":0,"collects":16,"followers":1,"shares":5,"avgViewTime":49},{"title":"硅谷顶级产品经理的职场成长心法👀","date":"2025-11-18","month":"2025-11","type":"图文","impressions":1944,"views":139,"ctr":0.07,"likes":6,"comments":2,"collects":5,"followers":1,"shares":3,"avgViewTime":8},{"title":"跟AI聊了30分钟，拿下今年黑五最佳Deal🥳","date":"2025-11-29","month":"2025-11","type":"图文","impressions":4464,"views":875,"ctr":0.194,"likes":11,"comments":5,"collects":4,"followers":2,"shares":4,"avgViewTime":13},{"title":"如何让GPT老师主动推荐你的产品🔍","date":"2025-12-01","month":"2025-12","type":"图文","impressions":535,"views":28,"ctr":0.054,"likes":2,"comments":0,"collects":4,"followers":0,"shares":0,"avgViewTime":4},{"title":"我仿佛无意中闯入了一张明信片(加州版)","date":"2025-12-02","month":"2025-12","type":"图文","impressions":14001,"views":1991,"ctr":0.143,"likes":103,"comments":13,"collects":25,"followers":2,"shares":20,"avgViewTime":7},{"title":"J人分享：如何用AI工具做播客知识库📒","date":"2025-12-08","month":"2025-12","type":"视频","impressions":4899,"views":1486,"ctr":0.071,"likes":61,"comments":3,"collects":75,"followers":19,"shares":10,"avgViewTime":21},{"title":"强烈推荐大家Notebook LM用起来‼️","date":"2025-12-13","month":"2025-12","type":"视频","impressions":2206,"views":360,"ctr":0.066,"likes":17,"comments":6,"collects":10,"followers":1,"shares":2,"avgViewTime":12},{"title":"30岁重新理解学习这件事","date":"2025-12-14","month":"2025-12","type":"图文","impressions":2695,"views":331,"ctr":0.124,"likes":27,"comments":3,"collects":15,"followers":0,"shares":0,"avgViewTime":11},{"title":"听硅谷AI Startup创始人聊产品的Aha Moment","date":"2025-12-15","month":"2025-12","type":"图文","impressions":4632,"views":600,"ctr":0.129,"likes":31,"comments":1,"collects":18,"followers":4,"shares":2,"avgViewTime":4},{"title":"🇺🇸找工很糟心，不如看看这本让你哈哈大笑","date":"2025-12-25","month":"2025-12","type":"图文","impressions":2059,"views":183,"ctr":0.089,"likes":16,"comments":3,"collects":4,"followers":0,"shares":1,"avgViewTime":46},{"title":"Notion创始人的年度思考，1个细节我停了很久","date":"2025-12-26","month":"2025-12","type":"图文","impressions":10172,"views":1660,"ctr":0.164,"likes":106,"comments":1,"collects":98,"followers":3,"shares":9,"avgViewTime":10},{"title":"J人年终总结🎧篇：2025我的Top1播客出现了","date":"2025-12-28","month":"2025-12","type":"图文","impressions":2812,"views":225,"ctr":0.08,"likes":16,"comments":7,"collects":7,"followers":0,"shares":2,"avgViewTime":21},{"title":"进入2026年前，请听这一期高质量AI播客🚀","date":"2025-12-29","month":"2025-12","type":"图文","impressions":2723,"views":232,"ctr":0.085,"likes":22,"comments":3,"collects":20,"followers":0,"shares":4,"avgViewTime":5},{"title":"没想到2025年最触及我的书居然是这本🥹","date":"2025-12-30","month":"2025-12","type":"图文","impressions":14964,"views":1854,"ctr":0.125,"likes":145,"comments":8,"collects":123,"followers":6,"shares":12,"avgViewTime":19},{"title":"活人感「Be Real」将成为2026年AI领域的热词","date":"2026-01-07","month":"2026-01","type":"图文","impressions":2252,"views":169,"ctr":0.073,"likes":20,"comments":5,"collects":7,"followers":0,"shares":3,"avgViewTime":11},{"title":"我发现很多人学AI都有一个误区","date":"2026-01-09","month":"2026-01","type":"图文","impressions":1793,"views":207,"ctr":0.115,"likes":21,"comments":0,"collects":14,"followers":1,"shares":7,"avgViewTime":15},{"title":"我真的按头安利‼️原来阅读记录app这么好玩","date":"2026-01-10","month":"2026-01","type":"图文","impressions":21067,"views":3536,"ctr":0.171,"likes":200,"comments":16,"collects":109,"followers":3,"shares":13,"avgViewTime":21},{"title":"在加州想念纽约","date":"2026-01-11","month":"2026-01","type":"图文","impressions":2255,"views":267,"ctr":0.12,"likes":24,"comments":11,"collects":6,"followers":1,"shares":3,"avgViewTime":13},{"title":"真心建议所有女生都读一下这本书‼️通透💡","date":"2026-01-12","month":"2026-01","type":"图文","impressions":2890,"views":285,"ctr":0.096,"likes":21,"comments":3,"collects":22,"followers":1,"shares":1,"avgViewTime":16},{"title":"🇺🇸给正在找工的朋友们一点方向与信心🧭","date":"2026-01-14","month":"2026-01","type":"图文","impressions":2767,"views":423,"ctr":0.151,"likes":23,"comments":1,"collects":9,"followers":0,"shares":1,"avgViewTime":25},{"title":"不要去主动摄入与你无关的信息","date":"2026-01-16","month":"2026-01","type":"图文","impressions":5436,"views":946,"ctr":0.177,"likes":112,"comments":5,"collects":65,"followers":4,"shares":5,"avgViewTime":21},{"title":"左滑带你看约书亚树的星空🌌","date":"2026-01-18","month":"2026-01","type":"图文","impressions":3915,"views":555,"ctr":0.142,"likes":19,"comments":5,"collects":5,"followers":0,"shares":9,"avgViewTime":10},{"title":"在加州Joshua Tree 把自己扔进🌵","date":"2026-01-19","month":"2026-01","type":"图文","impressions":2999,"views":422,"ctr":0.139,"likes":13,"comments":3,"collects":4,"followers":1,"shares":1,"avgViewTime":8},{"title":"如何在AI时代做出优秀的内容？","date":"2026-01-20","month":"2026-01","type":"图文","impressions":1383,"views":97,"ctr":0.07,"likes":10,"comments":0,"collects":6,"followers":1,"shares":0,"avgViewTime":5},{"title":"这一波操作 Claude上大分","date":"2026-01-25","month":"2026-01","type":"图文","impressions":5150,"views":1014,"ctr":0.197,"likes":26,"comments":5,"collects":23,"followers":2,"shares":12,"avgViewTime":17},{"title":"一件平常小事提醒我关于当下转念💐","date":"2026-01-28","month":"2026-01","type":"图文","impressions":3191,"views":571,"ctr":0.182,"likes":42,"comments":13,"collects":9,"followers":0,"shares":3,"avgViewTime":17},{"title":"原来Dream Job真的是自己创造出来的","date":"2026-01-30","month":"2026-01","type":"图文","impressions":5342,"views":496,"ctr":0.092,"likes":59,"comments":3,"collects":73,"followers":0,"shares":7,"avgViewTime":31},{"title":"听完这期播客，我决定停止那些无效的迂回","date":"2026-02-02","month":"2026-02","type":"图文","impressions":357,"views":47,"ctr":0.134,"likes":5,"comments":0,"collects":4,"followers":0,"shares":1,"avgViewTime":16},{"title":"学AI不要中计！不要中计！不要中计！","date":"2026-02-03","month":"2026-02","type":"图文","impressions":2209,"views":308,"ctr":0.135,"likes":15,"comments":3,"collects":13,"followers":0,"shares":1,"avgViewTime":15},{"title":"Claude Code写的学习笔记📒 强得令人发指😮","date":"2026-02-04","month":"2026-02","type":"图文","impressions":4608,"views":2352,"ctr":0.217,"likes":33,"comments":3,"collects":20,"followers":0,"shares":3,"avgViewTime":25}],"months":["2025-08","2025-09","2025-10","2025-11","2025-12","2026-01","2026-02"],"highLikesKeywords":[["如何",4],["真的",4],["北美",3],["职场",3],["原来",3],["油管大神教的",2],["如何像ceo一样表达",2],["打车版",2],["感悟",2],["加州版",2],["谁懂啊",2],["油管",2],["管大",2],["大神",2],["神教",2],["教的",2],["的如",2],["何像",2],["像一",2],["一样",2],["样表",2],["表达",2],["美职",2],["思考",2],["的好",2],["重要",2],["了一",2],["记录",2],["我的",2],["是这",2]],"highFollowersKeywords":[["如何",4],["感悟",3],["北美",3],["职场",3],["油管大神教的",2],["如何像ceo一样表达",2],["打车版",2],["谁懂啊",2],["油管",2],["管大",2],["大神",2],["神教",2],["教的",2],["的如",2],["何像",2],["像一",2],["一样",2],["样表",2],["表达",2],["重要",2],["美职",2],["我的",2],["围观",2],["硅谷",2],["产品",2],["离职",2],["是这",2],["博主",2],["课程",2],["油管大",2]]};
 
-        // ========== 全局变量 ==========
         let filteredData = [...rawData.notes];
         let northStarChart, followerTrendChart, conversionChart;
 
-        // ========== 初始化月份选择器 ==========
+        // ========== CHART.JS GLOBAL CONFIG ==========
+        Chart.defaults.color = '#71717a';
+        Chart.defaults.borderColor = 'rgba(63, 63, 70, 0.3)';
+        Chart.defaults.font.family = "'Inter', sans-serif";
+
         function initMonthPickers() {
             const startSelect = document.getElementById('startMonth');
             const endSelect = document.getElementById('endMonth');
             const months = rawData.months;
             const options = months.map(m => `<option value="${m}">${m}</option>`).join('');
-
             startSelect.innerHTML = options;
             endSelect.innerHTML = options;
-
             if (months.length > 0) {
                 startSelect.value = months[0];
                 endSelect.value = months[months.length - 1];
             }
         }
 
-        // ========== 筛选功能 ==========
         function applyFilter() {
             const startMonth = document.getElementById('startMonth').value;
             const endMonth = document.getElementById('endMonth').value;
-
-            filteredData = rawData.notes.filter(note => {
-                if (!note.month) return false;
-                return note.month >= startMonth && note.month <= endMonth;
-            });
-
+            filteredData = rawData.notes.filter(note => note.month >= startMonth && note.month <= endMonth);
             updateDashboard();
         }
 
@@ -2135,13 +807,12 @@
             updateDashboard();
         }
 
-        // ========== 数字格式化 ==========
         function formatNumber(num) {
-            if (num >= 10000) return (num / 10000).toFixed(1) + 'w';
+            if (num >= 10000) return (num / 10000).toFixed(1) + 'W';
+            if (num >= 1000) return (num / 1000).toFixed(1) + 'K';
             return num.toLocaleString();
         }
 
-        // ========== 更新整个看板 ==========
         function updateDashboard() {
             updateMetrics();
             updateNorthStarChart();
@@ -2151,7 +822,6 @@
             updateKeywords();
         }
 
-        // ========== 更新指标卡片 ==========
         function updateMetrics() {
             const totalImpressions = filteredData.reduce((sum, n) => sum + n.impressions, 0);
             const avgCtr = filteredData.length > 0
@@ -2170,16 +840,20 @@
             document.getElementById('totalFollowers').textContent = '+' + totalFollowers;
         }
 
-        // ========== 北极星图表 ==========
         function updateNorthStarChart() {
             const ctx = document.getElementById('northStarChart').getContext('2d');
             if (northStarChart) northStarChart.destroy();
 
-            document.getElementById('noteCount').textContent = `共 ${filteredData.length} 篇笔记`;
+            document.getElementById('noteCount').textContent = `${filteredData.length} NOTES`;
 
-            const labels = filteredData.map(n => n.title.length > 10 ? n.title.substring(0, 10) + '...' : n.title);
+            const labels = filteredData.map(n => n.title.length > 8 ? n.title.substring(0, 8) + '…' : n.title);
             const impressions = filteredData.map(n => n.impressions);
             const followers = filteredData.map(n => n.followers);
+
+            // Gradient for area fill
+            const gradientRed = ctx.createLinearGradient(0, 0, 0, 400);
+            gradientRed.addColorStop(0, 'rgba(255, 77, 109, 0.3)');
+            gradientRed.addColorStop(1, 'rgba(255, 77, 109, 0)');
 
             northStarChart = new Chart(ctx, {
                 type: 'line',
@@ -2189,23 +863,26 @@
                         {
                             label: '曝光量',
                             data: impressions,
-                            borderColor: '#FF2442',
-                            backgroundColor: 'rgba(255, 36, 66, 0.1)',
+                            borderColor: '#FF4D6D',
+                            backgroundColor: gradientRed,
                             borderWidth: 2,
                             fill: true,
                             tension: 0.4,
+                            pointRadius: 0,
+                            pointHoverRadius: 4,
+                            pointHoverBackgroundColor: '#FF4D6D',
                             yAxisID: 'y'
                         },
                         {
                             label: '涨粉数',
                             data: followers,
                             borderColor: '#10B981',
-                            backgroundColor: '#10B981',
+                            backgroundColor: 'transparent',
                             borderWidth: 2,
-                            pointRadius: 4,
-                            pointStyle: 'circle',
-                            showLine: true,
-                            borderDash: [5, 5],
+                            borderDash: [4, 4],
+                            tension: 0.4,
+                            pointRadius: 3,
+                            pointBackgroundColor: '#10B981',
                             yAxisID: 'y1'
                         }
                     ]
@@ -2218,63 +895,77 @@
                         legend: {
                             position: 'top',
                             align: 'end',
-                            labels: { color: '#6C757D', usePointStyle: true, padding: 20 }
+                            labels: {
+                                usePointStyle: true,
+                                pointStyle: 'line',
+                                padding: 20,
+                                font: { family: "'JetBrains Mono'", size: 11 }
+                            }
                         },
                         tooltip: {
-                            backgroundColor: '#fff',
-                            titleColor: '#212529',
-                            bodyColor: '#6C757D',
-                            borderColor: '#E9ECEF',
+                            backgroundColor: '#18181b',
+                            titleColor: '#fafafa',
+                            bodyColor: '#a1a1aa',
+                            borderColor: '#27272a',
                             borderWidth: 1,
-                            cornerRadius: 8,
+                            cornerRadius: 4,
+                            padding: 12,
+                            titleFont: { family: "'Inter'", weight: 600 },
+                            bodyFont: { family: "'JetBrains Mono'", size: 12 },
                             callbacks: {
-                                title: function(context) {
-                                    return filteredData[context[0].dataIndex].title;
-                                }
+                                title: ctx => filteredData[ctx[0].dataIndex].title
                             }
                         }
                     },
                     scales: {
                         x: {
-                            ticks: { color: '#ADB5BD', maxRotation: 45, minRotation: 45, font: { size: 10 } },
-                            grid: { color: '#F8F9FA' }
+                            ticks: {
+                                maxRotation: 45,
+                                font: { family: "'JetBrains Mono'", size: 9 }
+                            },
+                            grid: { color: 'rgba(63, 63, 70, 0.1)' }
                         },
                         y: {
                             type: 'linear',
                             position: 'left',
-                            ticks: { color: '#FF2442', callback: v => formatNumber(v) },
-                            grid: { color: '#F8F9FA' },
-                            title: { display: true, text: '曝光量', color: '#FF2442' }
+                            ticks: {
+                                callback: v => formatNumber(v),
+                                font: { family: "'JetBrains Mono'", size: 10 },
+                                color: '#FF4D6D'
+                            },
+                            grid: { color: 'rgba(63, 63, 70, 0.1)' }
                         },
                         y1: {
                             type: 'linear',
                             position: 'right',
-                            ticks: { color: '#10B981' },
-                            grid: { display: false },
-                            title: { display: true, text: '涨粉数', color: '#10B981' }
+                            ticks: {
+                                font: { family: "'JetBrains Mono'", size: 10 },
+                                color: '#10B981'
+                            },
+                            grid: { display: false }
                         }
                     }
                 }
             });
         }
 
-        // ========== 涨粉趋势图 ==========
         function updateFollowerTrendChart() {
             const ctx = document.getElementById('followerTrendChart').getContext('2d');
             if (followerTrendChart) followerTrendChart.destroy();
 
             const dateMap = {};
             filteredData.forEach(n => {
-                if (n.date) {
-                    dateMap[n.date] = (dateMap[n.date] || 0) + n.followers;
-                }
+                if (n.date) dateMap[n.date] = (dateMap[n.date] || 0) + n.followers;
             });
 
             const sortedDates = Object.keys(dateMap).sort();
             const followers = sortedDates.map(d => dateMap[d]);
-
             let cumulative = 0;
             const cumulativeFollowers = followers.map(f => { cumulative += f; return cumulative; });
+
+            const gradientGreen = ctx.createLinearGradient(0, 0, 0, 300);
+            gradientGreen.addColorStop(0, 'rgba(16, 185, 129, 0.3)');
+            gradientGreen.addColorStop(1, 'rgba(16, 185, 129, 0)');
 
             followerTrendChart = new Chart(ctx, {
                 type: 'line',
@@ -2285,20 +976,20 @@
                             label: '累计涨粉',
                             data: cumulativeFollowers,
                             borderColor: '#10B981',
-                            backgroundColor: 'rgba(16, 185, 129, 0.1)',
+                            backgroundColor: gradientGreen,
                             borderWidth: 2,
                             fill: true,
-                            tension: 0.4
+                            tension: 0.4,
+                            pointRadius: 0
                         },
                         {
                             label: '当日涨粉',
                             data: followers,
-                            borderColor: '#FF2442',
-                            backgroundColor: '#FF2442',
-                            borderWidth: 0,
-                            pointRadius: 3,
+                            borderColor: '#FF4D6D',
+                            backgroundColor: '#FF4D6D',
                             type: 'bar',
-                            barThickness: 6
+                            barThickness: 4,
+                            borderRadius: 2
                         }
                     ]
                 },
@@ -2306,25 +997,39 @@
                     responsive: true,
                     maintainAspectRatio: false,
                     plugins: {
-                        legend: { position: 'top', align: 'end', labels: { color: '#6C757D', usePointStyle: true } },
+                        legend: {
+                            position: 'top',
+                            align: 'end',
+                            labels: {
+                                usePointStyle: true,
+                                padding: 15,
+                                font: { family: "'JetBrains Mono'", size: 10 }
+                            }
+                        },
                         tooltip: {
-                            backgroundColor: '#fff',
-                            titleColor: '#212529',
-                            bodyColor: '#6C757D',
-                            borderColor: '#E9ECEF',
+                            backgroundColor: '#18181b',
+                            titleColor: '#fafafa',
+                            bodyColor: '#a1a1aa',
+                            borderColor: '#27272a',
                             borderWidth: 1,
-                            cornerRadius: 8
+                            cornerRadius: 4,
+                            bodyFont: { family: "'JetBrains Mono'" }
                         }
                     },
                     scales: {
-                        x: { ticks: { color: '#ADB5BD', maxRotation: 45, minRotation: 45, font: { size: 10 } }, grid: { color: '#F8F9FA' } },
-                        y: { ticks: { color: '#ADB5BD' }, grid: { color: '#F8F9FA' } }
+                        x: {
+                            ticks: { font: { family: "'JetBrains Mono'", size: 9 }, maxRotation: 45 },
+                            grid: { color: 'rgba(63, 63, 70, 0.1)' }
+                        },
+                        y: {
+                            ticks: { font: { family: "'JetBrains Mono'", size: 10 } },
+                            grid: { color: 'rgba(63, 63, 70, 0.1)' }
+                        }
                     }
                 }
             });
         }
 
-        // ========== 转化率排行图 ==========
         function updateConversionChart() {
             const ctx = document.getElementById('conversionChart').getContext('2d');
             if (conversionChart) conversionChart.destroy();
@@ -2335,7 +1040,7 @@
                 .sort((a, b) => b.conversion - a.conversion)
                 .slice(0, 10);
 
-            const labels = withConversion.map(n => n.title.length > 16 ? n.title.substring(0, 16) + '...' : n.title);
+            const labels = withConversion.map(n => n.title.length > 14 ? n.title.substring(0, 14) + '…' : n.title);
             const conversions = withConversion.map(n => n.conversion.toFixed(2));
 
             conversionChart = new Chart(ctx, {
@@ -2345,8 +1050,11 @@
                     datasets: [{
                         label: '每千曝光涨粉',
                         data: conversions,
-                        backgroundColor: '#10B981',
-                        borderRadius: 6
+                        backgroundColor: 'rgba(16, 185, 129, 0.6)',
+                        borderColor: '#10B981',
+                        borderWidth: 1,
+                        borderRadius: 4,
+                        barThickness: 16
                     }]
                 },
                 options: {
@@ -2356,24 +1064,30 @@
                     plugins: {
                         legend: { display: false },
                         tooltip: {
-                            backgroundColor: '#fff',
-                            titleColor: '#212529',
-                            bodyColor: '#6C757D',
-                            borderColor: '#E9ECEF',
+                            backgroundColor: '#18181b',
+                            titleColor: '#fafafa',
+                            bodyColor: '#a1a1aa',
+                            borderColor: '#27272a',
                             borderWidth: 1,
-                            cornerRadius: 8,
+                            cornerRadius: 4,
+                            bodyFont: { family: "'JetBrains Mono'" },
                             callbacks: { title: ctx => withConversion[ctx[0].dataIndex].title }
                         }
                     },
                     scales: {
-                        x: { ticks: { color: '#ADB5BD' }, grid: { color: '#F8F9FA' } },
-                        y: { ticks: { color: '#6C757D', font: { size: 11 } }, grid: { display: false } }
+                        x: {
+                            ticks: { font: { family: "'JetBrains Mono'", size: 10 } },
+                            grid: { color: 'rgba(63, 63, 70, 0.1)' }
+                        },
+                        y: {
+                            ticks: { font: { family: "'JetBrains Mono'", size: 10 } },
+                            grid: { display: false }
+                        }
                     }
                 }
             });
         }
 
-        // ========== 排行榜切换 ==========
         function switchRanking(type, btn) {
             document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
             btn.classList.add('active');
@@ -2402,7 +1116,7 @@
 
             list.innerHTML = sorted.slice(0, 10).map((note, idx) => `
                 <div class="ranking-item">
-                    <div class="ranking-number ${idx < 3 ? 'top3' : ''}">${idx + 1}</div>
+                    <div class="ranking-number ${idx < 3 ? 'top3' : ''}">${String(idx + 1).padStart(2, '0')}</div>
                     <div class="ranking-content">
                         <div class="ranking-title">${note.title}</div>
                         <div class="ranking-stats">${note.date} · ${note.type}</div>
@@ -2412,16 +1126,14 @@
             `).join('');
         }
 
-        // ========== 关键词云 ==========
         function updateKeywords() {
-            document.getElementById('highLikesKeywords').innerHTML = rawData.highLikesKeywords.slice(0, 12)
-                .map(([word, count]) => `<span class="keyword-tag red">${word}<span class="keyword-count">${count}</span></span>`).join('');
+            document.getElementById('highLikesKeywords').innerHTML = rawData.highLikesKeywords.slice(0, 10)
+                .map(([word, count]) => `<span class="keyword-tag accent">${word}<span class="keyword-count">${count}</span></span>`).join('');
 
-            document.getElementById('highFollowersKeywords').innerHTML = rawData.highFollowersKeywords.slice(0, 12)
-                .map(([word, count]) => `<span class="keyword-tag green">${word}<span class="keyword-count">${count}</span></span>`).join('');
+            document.getElementById('highFollowersKeywords').innerHTML = rawData.highFollowersKeywords.slice(0, 10)
+                .map(([word, count]) => `<span class="keyword-tag success">${word}<span class="keyword-count">${count}</span></span>`).join('');
         }
 
-        // ========== 页面加载完成后初始化 ==========
         initMonthPickers();
         updateDashboard();
     </script>
